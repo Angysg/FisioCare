@@ -53,9 +53,6 @@ export default function Pacientes() {
 
   // --------- Acciones ---------
 
-  // Crear paciente:
-  // 1) lo selecciona automáticamente
-  // 2) si ya hay un archivo elegido, lo sube al nuevo paciente
   async function crearPaciente(e) {
     e.preventDefault();
 
@@ -99,7 +96,7 @@ export default function Pacientes() {
     }
   }
 
-  // Subir adjunto manual (cuando quieras)
+  // Subir adjunto manual
   async function subirAdjunto() {
     if (!selected?._id) return alert("Selecciona un paciente primero.");
     if (!file) return alert("Selecciona un archivo.");
@@ -140,28 +137,28 @@ export default function Pacientes() {
   const botonAdjuntoDeshabilitado = !selected || !file;
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto", fontFamily:"system-ui, sans-serif" }}>
+    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
       {/* Cabecera */}
-      <header style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: 16 }}>
-        <h2 style={{ margin:0 }}>Pacientes</h2>
-        <div>
-          <span style={{ marginRight: 12, opacity:.8 }}>{user?.name} ({user?.role})</span>
+      <div className="page-header">
+        <h1 className="page-title">PACIENTES</h1>
+        <div className="page-header__actions">
+          <span className="page-header__user">{user?.name} ({user?.role})</span>
           <button onClick={salir}>Salir</button>
         </div>
-      </header>
+      </div>
 
       {/* Buscador + selector de orden */}
-      <div style={{ marginBottom: 16, display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+      <div style={{ marginBottom: 16, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <input
-          placeholder="Buscar por nombre/apellidos/email…"
+          placeholder="Buscar por nombre/apellidos/email..."
           value={query}
-          onChange={(e)=>setQuery(e.target.value)}
-          style={{ padding: 8, borderRadius: 8, border:"1px solid var(--border)", width: 320 }}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ width: 380 }}
         />
         <button onClick={load}>Buscar</button>
 
-        <div style={{ marginLeft: 8, display:"flex", gap:6, alignItems:"center" }}>
-          <span style={{ opacity:.7 }}>Orden:</span>
+        <div style={{ marginLeft: 8, display: "flex", gap: 6, alignItems: "center" }}>
+          <span style={{ color: "var(--muted)" }}>Orden:</span>
           <button
             onClick={() => setOrder('alpha')}
             disabled={order === 'alpha'}
@@ -176,73 +173,76 @@ export default function Pacientes() {
       </div>
 
       {/* Layout principal */}
-      <div style={{ display:"grid", gridTemplateColumns:"1.4fr 1fr", gap: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
         {/* LISTADO + DETALLE */}
         <div>
           <h3>Listado</h3>
-          <ul style={{ listStyle:"none", padding:0 }}>
-            {list.map(p=>(
-              <li
-                key={p._id}
-                onClick={() =>
-                  // Toggle: si hago click otra vez en el mismo, se deselecciona
-                  setSelected(prev => (prev?._id === p._id ? null : p))
-                }
-                style={{
-                  padding:10,
-                  border:"1px solid #e5e7eb",
-                  borderRadius:10,
-                  marginBottom:8,
-                  background: selected?._id===p._id ? "#ecfdf5" : "white",
-                  cursor:"pointer"
-                }}
-              >
-                <strong>{p.nombre} {p.apellidos}</strong><br/>
-                <small>{p.email} · {p.telefono}</small>
-              </li>
-            ))}
+
+          {/* ✅ Contenedor con id para estilos */}
+          <ul id="listaPacientes" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {list.map(p => {
+              const isSel = selected?._id === p._id;
+              return (
+                <li
+                  key={p._id}
+                  className="pac-item" // ✅ clase para estilos
+                  onClick={() =>
+                    setSelected(prev => (prev?._id === p._id ? null : p))
+                  }
+                  style={{
+                    cursor: "pointer",
+                    // realce de seleccionado sin usar blancos: borde y leve fondo
+                    borderColor: isSel ? "var(--link-hover)" : undefined,
+                    boxShadow: isSel ? "0 0 0 2px color-mix(in oklab, var(--link) 45%, transparent)" : undefined
+                  }}
+                >
+                  <div className="name">{p.nombre} {p.apellidos}</div>
+                  <div className="meta">{p.email} · {p.telefono || "—"}</div>
+                </li>
+              );
+            })}
           </ul>
 
           {/* Panel detalle del paciente seleccionado */}
           {selected && (
             <div className="card" style={{ marginTop: 16 }}>
-              <h4 style={{ marginTop:0 }}>
+              <h4 style={{ marginTop: 0 }}>
                 Detalle de {selected.nombre} {selected.apellidos}
               </h4>
 
               {/* Antecedentes */}
-              <div style={{ marginBottom:12 }}>
-                <div style={{ fontWeight:600, marginBottom:6 }}>Antecedentes médicos</div>
-                <div style={{ whiteSpace:"pre-wrap", opacity:.9 }}>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontWeight: 600, marginBottom: 6 }}>Antecedentes médicos</div>
+                <div style={{ whiteSpace: "pre-wrap" }}>
                   {selected.antecedentes_medicos?.trim()
                     ? selected.antecedentes_medicos
-                    : <i>Sin antecedentes</i>}
+                    : <i style={{ color: "var(--muted)" }}>Sin antecedentes</i>}
                 </div>
               </div>
 
               {/* Adjuntos */}
               <div>
-                <div style={{ fontWeight:600, marginBottom:6 }}>Adjuntos</div>
+                <div style={{ fontWeight: 600, marginBottom: 6 }}>Adjuntos</div>
                 {attachments.length === 0 ? (
-                  <i>No hay adjuntos</i>
+                  <i style={{ color: "var(--muted)" }}>No hay adjuntos</i>
                 ) : (
-                  <ul style={{ listStyle:"none", padding:0, margin:0 }}>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     {attachments.map(a => (
                       <li
                         key={a._id}
                         style={{
-                          display:"flex",
-                          justifyContent:"space-between",
-                          alignItems:"center",
-                          padding:"6px 0",
-                          borderBottom:"1px solid var(--border)"
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: "6px 0",
+                          borderBottom: "1px solid var(--border)"
                         }}
                       >
-                        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth: "70%" }}>
-                          {a.originalName} <small style={{ opacity:.7 }}>({a.mimeType})</small>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "70%" }}>
+                          {a.originalName} <small style={{ color: "var(--muted)" }}>({a.mimeType})</small>
                         </span>
-                        <div style={{ display:"flex", gap:8 }}>
-                          <button onClick={()=>descargarAdjunto(a)}>Descargar</button>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button onClick={() => descargarAdjunto(a)}>Descargar</button>
                           {/* Aquí podrías añadir un botón "Eliminar" (DELETE) solo para admin */}
                         </div>
                       </li>
@@ -257,48 +257,63 @@ export default function Pacientes() {
         {/* CREAR + SUBIR ADJUNTO */}
         <div>
           <h3>Crear paciente</h3>
-          <form onSubmit={crearPaciente} style={{ display:"grid", gap:8, marginBottom: 24 }}>
-            <input
-              placeholder="Nombre"
-              value={form.nombre}
-              onChange={e=>setForm({ ...form, nombre:e.target.value })}
-            />
-            <input
-              placeholder="Apellidos"
-              value={form.apellidos}
-              onChange={e=>setForm({ ...form, apellidos:e.target.value })}
-            />
-            <input
-              placeholder="Email"
-              value={form.email}
-              onChange={e=>setForm({ ...form, email:e.target.value })}
-            />
-            <input
-              placeholder="Teléfono"
-              value={form.telefono}
-              onChange={e=>setForm({ ...form, telefono:e.target.value })}
-            />
-            <textarea
-              placeholder="Antecedentes médicos (opcional)"
-              value={form.antecedentes_medicos}
-              onChange={e=>setForm({ ...form, antecedentes_medicos: e.target.value })}
-              rows={4}
-              style={{ resize:"vertical", padding:10, borderRadius:8, border:"1px solid var(--border)" }}
-            />
-            <button type="submit">Crear</button>
+          <form onSubmit={crearPaciente} className="card" style={{ display: "grid", gap: 10, marginBottom: 24 }}>
+            <div className="form-field">
+              <label>Nombre</label>
+              <input
+                placeholder="Nombre"
+                value={form.nombre}
+                onChange={e => setForm({ ...form, nombre: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label>Apellidos</label>
+              <input
+                placeholder="Apellidos"
+                value={form.apellidos}
+                onChange={e => setForm({ ...form, apellidos: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label>Teléfono</label>
+              <input
+                placeholder="Teléfono"
+                value={form.telefono}
+                onChange={e => setForm({ ...form, telefono: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label>Antecedentes médicos (opcional)</label>
+              <textarea
+                placeholder="Antecedentes médicos (opcional)"
+                value={form.antecedentes_medicos}
+                onChange={e => setForm({ ...form, antecedentes_medicos: e.target.value })}
+                rows={4}
+              />
+            </div>
+            <button type="submit" style={{ width: "100%" }}>Crear</button>
           </form>
 
           <h3>Adjuntar archivo al seleccionado</h3>
           <div style={{ marginBottom: 6 }}>
             {selected
               ? <span>Paciente: <b>{selected.nombre} {selected.apellidos}</b></span>
-              : <i>Sin seleccionar</i>}
+              : <i style={{ color: "var(--muted)" }}>Sin seleccionar</i>}
           </div>
 
           <input
             type="file"
             ref={fileInputRef}
-            onChange={(e)=>setFile(e.target.files?.[0] || null)}
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
           />
           <div style={{ marginTop: 8 }}>
             <button onClick={subirAdjunto} disabled={botonAdjuntoDeshabilitado}>

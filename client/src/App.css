@@ -1,90 +1,245 @@
-/* Paleta y fuentes */
-:root {
-  --bg: #0f172a;
-  --surface: #111827;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --primary: #22c55e;
-  --border: #1f2937;
-  --link: #60a5fa;        /* azul claro legible en oscuro */
-  --link-hover: #93c5fd;
+:root{
+  /* Dark (por defecto) */
+  --bg:#0f172a;
+  --surface:#111827;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --border:#1f2937;
+  --link:#60a5fa;
+  --link-hover:#93c5fd;
+
+  /* Panels / list items */
+  --panel: rgba(255,255,255,0.05);
+  --panel-hover: rgba(255,255,255,0.08);
+
+  /* Card bienvenida */
+  --card-bg: rgba(255,255,255,0.06);
+  --card-shadow: 0 6px 24px rgba(0,0,0,.35);
+
+  /* Inputs */
+  --input-bg:#0b1220; 
+  --input-text: var(--text);
+
+  /* Botones (glass) */
+  --btn-bg: rgba(96,165,250,.25);
+  --btn-bg-hover: rgba(147,197,253,.45);
+  --btn-text:#f9fafb;
+  --btn-border: rgba(255,255,255,.12);
+
+  /* Page title */
+  --title:#e5edff;
+  --title-shadow: 0 2px 0 rgba(0,0,0,.25);
 }
 
-/* Modo claro (lo activaremos con .light en <html>) */
-:root.light {
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --text: #0f172a;
-  --muted: #475569;
-  --primary: #16a34a;
-  --border: #e5e7eb;
-  --link: #2563eb;        /* azul más oscuro para modo claro */
-  --link-hover: #1d4ed8;
+:root.light{
+  --bg:#e6f0ff;        /* celeste claro */
+  --surface:#ffffff;
+  --text:#0a0a0a;
+  --muted:#475569;
+  --border:#dbe1ea;
+  --link:#2563eb;
+  --link-hover:#1d4ed8;
+
+  --panel: rgba(255,255,255,.65);    /* sin caja blanca sólida */
+  --panel-hover: rgba(255,255,255,.8);
+
+  --card-bg:#ffffff;
+  --card-shadow: 0 6px 24px rgba(0,0,0,.10);
+
+  --input-bg:#ffffff;
+  --input-text:#0f172a;
+
+  --btn-bg: rgba(59,130,246,.80);
+  --btn-bg-hover: rgba(37,99,235,.95);
+  --btn-text:#ffffff;
+  --btn-border: transparent;
+
+  --title:#0b225a;
+  --title-shadow: none;
 }
 
-/* Estilo común para enlaces (header y resto) */
-a {
-  color: var(--link);
-  text-decoration: none;
-  font-weight: 600;
-}
-a:hover, a:focus {
-  color: var(--link-hover);
-  text-decoration: underline;
-  outline: none;
-}
-
-/* Header fijo y con fondo */
-header {
-  position: sticky;
-  top: 0;
-  background: var(--surface);
-  z-index: 10;
-}
-
-
-html, body, #root {
-  height: 100%;
-  margin: 0;
-}
-
-body {
+/* =========================
+   Base
+   ========================= */
+html,body,#root{height:100%;margin:0}
+body{
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  transition: background-color .3s ease, color .3s ease;
 }
 
-/* Tarjetas */
-.card {
+/* Header */
+header{
+  position: sticky; top:0; z-index:10;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+  border-bottom: 1px solid var(--border);
+}
+nav a{
+  color: var(--link); text-decoration: none; font-weight: 600; margin-right: 1rem;
+}
+nav a:hover{ color: var(--link-hover); text-decoration: underline; }
+
+/* =========================
+   Título de página
+   ========================= */
+.page-title{
+  font-size: 2rem;
+  letter-spacing: .02em;
+  font-weight: 800;
+  color: var(--title);
+  text-shadow: var(--title-shadow);
+  margin: 1.5rem 0 1rem;
 }
 
-/* Inputs y botones */
-input, button {
-  font: inherit;
+/* =========================
+   Card simple (bienvenida u otros)
+   ========================= */
+.card{
+  background: var(--card-bg);
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+}
+
+/* =========================
+   Formularios (labels arriba)
+   ========================= */
+.form-field{ margin-bottom: .9rem; }
+label{
+  display:block; font-weight: 600; margin-bottom: .35rem;
+  color: var(--text);
+}
+input, select, textarea, button{
+  font: inherit; border-radius: 8px; border:1px solid var(--border); box-sizing: border-box;
+}
+input, select, textarea{
+  color: var(--input-text); background: var(--input-bg);
+  padding: 10px 12px; width: 100%;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+input::placeholder, textarea::placeholder{ color: var(--muted); opacity: .9; }
+
+input:focus, select:focus, textarea:focus{
+  outline: none;
+  border-color: rgba(59,130,246,.45);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+textarea{ min-height: 110px; resize: vertical; line-height: 1.4; }
+
+/* =========================
+   Botones (glass)
+   ========================= */
+button{
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-size: 1rem; padding: .6rem 1.4rem;
+  cursor: pointer;
+  transition: transform .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+button:hover{ background: var(--btn-bg-hover); transform: scale(1.03); }
+button[disabled]{ opacity:.6; cursor:not-allowed }
+
+/* =========================
+   Listas (pacientes)
+   ========================= */
+.list{ display: grid; gap: .75rem; }
+.list-item{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .75rem .9rem;
+  transition: background .2s ease, border-color .2s ease, transform .1s ease;
+}
+.list-item:hover{ background: var(--panel-hover); transform: translateY(-1px); }
+.list-item .name{ font-weight: 700; }
+.list-item .meta{ color: var(--muted); font-size: .95rem; }
+
+/* =========================
+   Home (tarjetas de navegación)
+   ========================= */
+.grid{
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.nav-card{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem;
+  text-align: center;
+  transition: background .2s ease, transform .12s ease, box-shadow .2s ease;
+}
+.nav-card:hover{
+  background: var(--panel-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+.nav-card h3{ margin:.5rem 0; }
+
+/* ====== LISTADO PACIENTES ====== */
+#listaPacientes {
+  display: grid;
+  gap: 12px;
+}
+
+/* Tarjeta de cada paciente (ligera, sin “blanco puro”) */
+#listaPacientes .pac-item {
+  background: var(--panel);                   /* usa panel según tema */
+  border: 1px solid var(--border);
+  border-radius: 10px;
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  transition: background .2s ease, border-color .2s ease, transform .1s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-input {
-  background: #0b1220;
+/* Hover consistente */
+#listaPacientes .pac-item:hover {
+  background: var(--panel-hover);
+  transform: translateY(-1px);
+}
+
+/* Tipografías internas */
+#listaPacientes .pac-item .name {
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 2px;
   color: var(--text);
 }
 
-:root.light input {
-  background: #fff;
+/* En oscuro, subimos el contraste de la línea secundaria */
+#listaPacientes .pac-item .meta {
+  font-size: .95rem;
+  color: color-mix(in oklab, var(--text) 72%, transparent); /* buena legibilidad */
 }
 
-button {
-  background: var(--primary);
-  color: #0b1220;
-  font-weight: 700;
-  cursor: pointer;
+/* Cabecera local de página: sin fondo ni borde */
+.page-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 12px 0;
+  background: transparent !important; /* clave para no coger el fondo del header global */
+  border: 0 !important;
+  padding: 0;
 }
+.page-header__actions{
+  display: flex; gap: 8px; align-items: center;
+}
+.page-header__user{ color: var(--muted); }
 
-button[disabled] { opacity: .6; cursor: not-allowed; }
+/* Título de página usa variables del tema (ya definidas) */
+.page-title{
+  margin: 0; 
+  font-size: 2rem;
+  letter-spacing: .02em;
+  font-weight: 800;
+  color: var(--title);      /* en claro = oscuro; en oscuro = claro */
+  text-shadow: var(--title-shadow);
+  background: transparent; /* por si acaso */
+  display: inline-block;
+}

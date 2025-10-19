@@ -26,9 +26,9 @@ export default function Login() {
     <div style={{ display:"grid", placeItems:"center", minHeight:"60vh" }}>
       <form onSubmit={onSubmit} className="card" style={{ width: 380 }}>
         <h1 style={{ marginBottom:16 }}>Iniciar sesión</h1>
-        <label>Email</label>
+        <label>Email:</label>
         <input value={email} onChange={(e)=>setEmail(e.target.value)} style={{ width:"90%", margin:"6px 0 12px" }}/>
-        <label>Contraseña</label>
+        <label>Contraseña:</label>
         <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} style={{ width:"90%", margin:"6px 0 16px" }}/>
         {error && <div style={{ color:"#f87171", marginBottom:10 }}>{error}</div>}
         <button type="submit" style={{ width:"100%" }}>Entrar</button>
