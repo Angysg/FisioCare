@@ -1,33 +1,93 @@
-import { Link } from "react-router-dom";
-import ThemeToggle from "./ThemeToggle.jsx";
-import { isLoggedIn } from "../auth.js";
-
-const clinicName = import.meta.env.VITE_CLINIC_NAME || "Clínica";
+import { Link, NavLink } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle";
+import { getRole } from "../session";
 
 export default function Layout({ children }) {
-  const logged = isLoggedIn();
+  const role = getRole(); // "admin" | "fisioterapeuta"
+
+  const base = [
+    { to: "/", label: "Inicio" },
+    { to: "/pacientes", label: "Pacientes" },
+    { to: "/citas", label: "Citas" },
+    { to: "/seguimiento", label: "Seguimiento y Valoración" },
+    { to: "/pilates", label: "Grupo Pilates" },
+  ];
+  const extraAdmin =
+    role === "admin" ? [{ to: "/fisioterapeutas", label: "Fisioterapeutas" }] : [];
+  const links = [...base, ...extraAdmin];
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* Header global */}
-      <header style={{
-        display:"flex", alignItems:"center", justifyContent:"space-between",
-        padding:"12px 20px", borderBottom:"1px solid var(--border)"
-      }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <span style={{ fontWeight:800 }}>{clinicName}</span>
-          <nav style={{ display:"flex", gap:12 }}>
-            <Link to="/">Inicio</Link>
-            {logged ? <Link to="/pacientes">Pacientes</Link> : <Link to="/login">Login</Link>}
+    <>
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
+          backdropFilter: "saturate(180%) blur(8px)",
+          background: "var(--surface)",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
+        {/* Wrapper del header un poco más ancho que .container normal */}
+        <div
+          style={{
+            maxWidth: "1280px",              // ⬅️ más ancho para separar extremos
+            margin: "0 auto",
+            padding: "10px 24px",            // ⬅️ pequeño padding lateral
+            display: "grid",
+            gridTemplateColumns: "auto 1fr auto", // título | nav | toggle
+            alignItems: "center",
+            columnGap: "16px",
+          }}
+        >
+          {/* Izquierda: logo / título */}
+          <div style={{ justifySelf: "start" }}>
+            <Link
+              to="/"
+              style={{
+                fontWeight: 800,
+                textDecoration: "none",
+                color: "var(--text)",
+                fontSize: "1.1rem",
+                letterSpacing: ".2px",
+              }}
+            >
+              Clínica FisioCare
+            </Link>
+          </div>
+
+          {/* Centro: navegación */}
+          <nav
+            className="topnav"
+            style={{
+              display: "flex",
+              gap: "12px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            {links.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                {l.label}
+              </NavLink>
+            ))}
           </nav>
+
+          {/* Derecha: botón tema completamente al extremo */}
+          <div style={{ justifySelf: "end" }}>
+            <ThemeToggle />
+          </div>
         </div>
-        <ThemeToggle />
       </header>
 
-      {/* Contenido de cada página */}
-      <main style={{ flex:1, padding: 24 }}>
+      {/* Contenido con el ancho habitual */}
+      <div className="container" style={{ paddingTop: 16 }}>
         {children}
-      </main>
-    </div>
+      </div>
+    </>
   );
 }

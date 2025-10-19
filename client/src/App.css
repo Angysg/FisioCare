@@ -1,7 +1,7 @@
 :root{
   /* Dark (por defecto) */
   --bg:#0f172a;
-  --surface:#111827;
+  --surface:#1c2840;
   --text:#e2e8f0;
   --muted:#94a3b8;
   --border:#1f2937;
@@ -69,6 +69,13 @@ body{
   transition: background-color .3s ease, color .3s ease;
 }
 
+/* Contenedor general: recupera márgenes y respiro */
+.container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
 /* Header */
 header{
   position: sticky; top:0; z-index:10;
@@ -77,8 +84,14 @@ header{
 }
 nav a{
   color: var(--link); text-decoration: none; font-weight: 600; margin-right: 1rem;
+  padding: 6px 8px; border-radius: 8px; border: 1px solid transparent;
 }
 nav a:hover{ color: var(--link-hover); text-decoration: underline; }
+/* Estado activo para NavLink */
+nav a.active{
+  background: color-mix(in srgb, var(--link) 12%, transparent);
+  border-color: var(--border);
+}
 
 /* =========================
    Título de página
@@ -185,10 +198,8 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
   display: grid;
   gap: 12px;
 }
-
-/* Tarjeta de cada paciente (ligera, sin “blanco puro”) */
 #listaPacientes .pac-item {
-  background: var(--panel);                   /* usa panel según tema */
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
@@ -196,34 +207,28 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
   display: flex;
   flex-direction: column;
 }
-
-/* Hover consistente */
 #listaPacientes .pac-item:hover {
   background: var(--panel-hover);
   transform: translateY(-1px);
 }
-
-/* Tipografías internas */
 #listaPacientes .pac-item .name {
   font-weight: 700;
   line-height: 1.25;
   margin-bottom: 2px;
   color: var(--text);
 }
-
-/* En oscuro, subimos el contraste de la línea secundaria */
 #listaPacientes .pac-item .meta {
   font-size: .95rem;
-  color: color-mix(in oklab, var(--text) 72%, transparent); /* buena legibilidad */
+  color: color-mix(in oklab, var(--text) 72%, transparent);
 }
 
-/* Cabecera local de página: sin fondo ni borde */
+/* Cabecera local de página */
 .page-header{
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 0 0 12px 0;
-  background: transparent !important; /* clave para no coger el fondo del header global */
+  background: transparent !important;
   border: 0 !important;
   padding: 0;
 }
@@ -232,14 +237,53 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
 }
 .page-header__user{ color: var(--muted); }
 
-/* Título de página usa variables del tema (ya definidas) */
+/* Título de página */
 .page-title{
   margin: 0; 
   font-size: 2rem;
   letter-spacing: .02em;
   font-weight: 800;
-  color: var(--title);      /* en claro = oscuro; en oscuro = claro */
+  color: var(--title);
   text-shadow: var(--title-shadow);
-  background: transparent; /* por si acaso */
+  background: transparent;
   display: inline-block;
+}
+
+/* --------- Dashboard como lista vertical ---------- */
+.dashboard-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+/* Evita que los enlaces del dashboard cambien el color visitado */
+.card-link, .card-link:visited { color: inherit; }
+
+.card-link {
+  display: block;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--card-bd, var(--border));
+  background: var(--card-bg);
+  text-decoration: none;
+  transition: box-shadow .15s ease, transform .05s ease, border-color .15s ease;
+}
+.card-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.10);
+  border-color: var(--card-bd-strong, var(--border));
+}
+.card-link h2, .card-link p { margin: 0; color: var(--text); }
+.card-link p { color: var(--muted); margin-top: .35rem; }
+
+/* Variables específicas para las tarjetas del dashboard */
+body.light {
+  --card-bg: #ffffff;                 /* tarjetas claras y limpias */
+  --card-bd: rgba(15, 23, 42, .15);
+  --card-bd-strong: rgba(15, 23, 42, .30);
+}
+body.dark {
+  --card-bg: #151c2b;                 /* como el listado de pacientes */
+  --card-bd: rgba(255, 255, 255, .12);
+  --card-bd-strong: rgba(255, 255, 255, .24);
 }
