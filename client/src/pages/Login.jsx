@@ -1,0 +1,38 @@
+// Formulario simple: llama a /api/auth/login y guarda token/usuario
+import { useState } from "react";
+import api from "../api";
+import { saveSession } from "../auth";
+import { useNavigate } from "react-router-dom";
+
+export default function Login() {
+  const [email, setEmail] = useState("admin@clinica.com");
+  const [password, setPassword] = useState("admin123");
+  const [error, setError] = useState("");
+  const nav = useNavigate();
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError("");
+    try {
+      const { data } = await api.post("/api/auth/login", { email, password });
+      saveSession(data);
+      nav("/pacientes");
+    } catch (err) {
+      setError(err.response?.data?.error?.message || "Error de login");
+    }
+  }
+
+  return (
+    <div style={{ display:"grid", placeItems:"center", minHeight:"60vh" }}>
+      <form onSubmit={onSubmit} className="card" style={{ width: 380 }}>
+        <h1 style={{ marginBottom:16 }}>Iniciar sesión</h1>
+        <label>Email</label>
+        <input value={email} onChange={(e)=>setEmail(e.target.value)} style={{ width:"90%", margin:"6px 0 12px" }}/>
+        <label>Contraseña</label>
+        <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} style={{ width:"90%", margin:"6px 0 16px" }}/>
+        {error && <div style={{ color:"#f87171", marginBottom:10 }}>{error}</div>}
+        <button type="submit" style={{ width:"100%" }}>Entrar</button>
+      </form>
+    </div>
+  );
+}

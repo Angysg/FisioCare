@@ -1,0 +1,32 @@
+# Node / general
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+package-lock.json
+.DS_Store
+
+# Env
+*.env
+*.env.*.local
+.env
+
+# Build
+dist/
+build/
+
+# Coverage / reports
+coverage/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+
+# App specifics
+server/uploads/
+!server/uploads/.gitkeep
+client/.vite/
