@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import api from "../api";
 import { logout, getUser } from "../auth";
 import { useNavigate } from "react-router-dom";
+import { apiListPacientes, apiDeletePaciente } from "../api"; // 👈 helpers nuevos
 
 /* ===== Botón suave que NO es <button> para evitar estilos globales ===== */
 function AdjButton({ children, onClick, variant = "action" }) {
@@ -13,7 +14,7 @@ function AdjButton({ children, onClick, variant = "action" }) {
     userSelect: "none",
     borderRadius: 8,
     padding: "6px 12px",
-    fontSize: 16,
+    fontSize: 16,            // 👈 como dijiste, 16
     lineHeight: 1,
     cursor: "pointer",
     outline: "none",
@@ -25,14 +26,14 @@ function AdjButton({ children, onClick, variant = "action" }) {
       ? {
           color: "#b91c1c",
           border: "1px solid rgba(185,28,28,0.35)",
-          background: "rgba(185,28,28,0.05)", // 🔹 fondo muy suave rojo
+          background: "rgba(185,28,28,0.05)",
           hoverBg: "rgba(185,28,28,0.12)",
           focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
         }
       : {
           color: "var(--link)",
           border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-          background: "color-mix(in srgb, var(--link) 6%, transparent)", // 🔹 fondo azulado muy suave
+          background: "color-mix(in srgb, var(--link) 6%, transparent)",
           hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
           focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
         };
@@ -60,18 +61,13 @@ function AdjButton({ children, onClick, variant = "action" }) {
         background: bg,
         border: palette.border,
       }}
-      onMouseDown={(e) => {
-        e.currentTarget.style.boxShadow = palette.focusRing;
-      }}
-      onMouseUp={(e) => {
-        e.currentTarget.style.boxShadow = "none";
-      }}
+      onMouseDown={(e) => { e.currentTarget.style.boxShadow = palette.focusRing; }}
+      onMouseUp={(e) => { e.currentTarget.style.boxShadow = "none"; }}
     >
       {children}
     </span>
   );
 }
-
 
 /* ============ Fila de paciente con acordeón (height + overflow) ============ */
 function PacienteRow({
@@ -82,6 +78,7 @@ function PacienteRow({
   onVerAdjunto,
   onDescargarAdjunto,
   onEliminarAdjunto,
+  onEliminarPaciente, // 👈 NUEVO: callback para borrar paciente
   canDelete,
 }) {
   const wrapRef = useRef(null);
@@ -134,6 +131,7 @@ function PacienteRow({
           justifyContent: "space-between",
           cursor: "pointer",
           borderRadius: 12,
+          gap: 8,
         }}
       >
         <div>
@@ -144,16 +142,33 @@ function PacienteRow({
             {paciente.email} · {paciente.telefono || "—"}
           </div>
         </div>
-        <span
-          style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: "var(--link)",
-            userSelect: "none",
-          }}
-        >
-          {isOpen ? "Ocultar" : "Ver detalle"}
-        </span>
+
+        {/* Lado derecho: Ver/Ocultar + botón Eliminar paciente */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--link)",
+              userSelect: "none",
+            }}
+          >
+            {isOpen ? "Ocultar" : "Ver detalle"}
+          </span>
+
+          {canDelete && (
+            <AdjButton
+              variant="delete"
+              onClick={(e) => {
+                e.stopPropagation(); // que no abra/cierre el acordeón
+                e.preventDefault();
+                onEliminarPaciente?.(paciente);
+              }}
+            >
+              Eliminar paciente
+            </AdjButton>
+          )}
+        </div>
       </button>
 
       {/* Cuerpo con animación por altura */}
@@ -202,7 +217,6 @@ function PacienteRow({
                         <small style={{ color: "var(--muted)" }}>({a.mimeType})</small>
                       </span>
 
-                      {/* === BOTONES SUAVES (no <button>) === */}
                       <div style={{ display: "flex", gap: 8 }}>
                         <AdjButton onClick={() => onVerAdjunto(a)}>Ver</AdjButton>
                         <AdjButton onClick={() => onDescargarAdjunto(a)}>Descargar</AdjButton>
@@ -246,18 +260,17 @@ export default function Pacientes() {
 
   const nav = useNavigate();
   const user = getUser();
-  const canDelete =
-    user?.role?.toLowerCase?.() === "admin" ||
-    user?.role?.toLowerCase?.() === "administrador";
+  const canDelete = ["admin", "administrador", "fisioterapeuta"]
+    .includes(user?.role?.toLowerCase?.());
 
+  // carga inicial y cuando cambie orden
   useEffect(() => { load(); }, []);
   useEffect(() => { load(); }, [order]);
 
   async function load() {
-    const { data } = await api.get("/api/pacientes", {
-      params: { q: query, sort: order },
-    });
-    setList(data.data);
+    // usando helper (axios dentro)
+    const items = await apiListPacientes({ q: query, sort: order });
+    setList(items);
   }
 
   useEffect(() => {
@@ -352,6 +365,29 @@ export default function Pacientes() {
     alert("Adjunto eliminado");
   }
 
+  // 👇 NUEVO: eliminar paciente (con cascada en backend)
+  async function eliminarPaciente(p) {
+    const ok = confirm(`¿Eliminar al paciente "${p.nombre} ${p.apellidos}"? También se borrarán sus adjuntos.`);
+    if (!ok) return;
+
+    await apiDeletePaciente(p._id);
+
+    // Quita de la lista
+    setList((prev) => prev.filter((x) => x._id !== p._id));
+
+    // Limpia adjuntos en memoria
+    setAttachmentsById((prev) => {
+      const next = { ...prev };
+      delete next[p._id];
+      return next;
+    });
+
+    // Si era el seleccionado, deselecciona
+    setSelected((prev) => (prev?._id === p._id ? null : prev));
+
+    alert("Paciente eliminado");
+  }
+
   function salir() { logout(); nav("/login"); }
 
   const botonAdjuntoDeshabilitado = !selected || !file;
@@ -397,6 +433,7 @@ export default function Pacientes() {
                   onVerAdjunto={verAdjunto}
                   onDescargarAdjunto={descargarAdjunto}
                   onEliminarAdjunto={eliminarAdjunto}
+                  onEliminarPaciente={eliminarPaciente}   // 👈 NUEVO
                   canDelete={canDelete}
                 />
               );
