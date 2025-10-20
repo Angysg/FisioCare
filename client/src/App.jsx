@@ -9,6 +9,7 @@ import Citas from "./pages/Citas.jsx";
 import Seguimiento from "./pages/Seguimiento.jsx";
 import Pilates from "./pages/Pilates.jsx";
 import Fisioterapeutas from "./pages/Fisioterapeutas.jsx";
+import EditPaciente from "./pages/EditPaciente.jsx"; // 👈 NUEVO
 
 export default function App() {
   return (
@@ -39,6 +40,18 @@ export default function App() {
             <Layout>
               <ProtectedRoute>
                 <Pacientes />
+              </ProtectedRoute>
+            </Layout>
+          }
+        />
+
+        {/* Editar paciente (protegida) */}
+        <Route
+          path="/pacientes/:id/editar"
+          element={
+            <Layout>
+              <ProtectedRoute>
+                <EditPaciente />
               </ProtectedRoute>
             </Layout>
           }

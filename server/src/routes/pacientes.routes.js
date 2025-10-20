@@ -72,9 +72,13 @@ router.get('/:id', requireAuth, async (req, res) => {
 
 // Editar (admin y fisioterapeuta)
 router.put('/:id', requireAuth, ensureWriter, async (req, res) => {
+  // Permitimos actualizar solo los campos esperados para evitar escribir otros por error
+  const { nombre, apellidos, email, telefono, fecha_nacimiento, antecedentes_medicos } = req.body || {};
+  const payload = { nombre, apellidos, email, telefono, fecha_nacimiento, antecedentes_medicos };
+
   const updated = await Paciente.findByIdAndUpdate(
     req.params.id,
-    req.body,
+    payload,
     { new: true, runValidators: true }
   );
   if (!updated) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Paciente no encontrado' } });
@@ -149,7 +153,6 @@ router.get('/adjuntos/:adjuntoId', requireAuth, async (req, res) => {
     return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Archivo no existe' } });
   }
 
-  // Esta línea hace que, al descargar, te proponga el nombre original (ej. "Informe.pdf")
   res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(a.originalName)}"`);
   res.type(a.mimeType);
   fs.createReadStream(a.pathOrUrl).pipe(res);

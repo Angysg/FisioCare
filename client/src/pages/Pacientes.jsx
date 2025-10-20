@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import api from "../api";
 import { logout, getUser } from "../auth";
 import { useNavigate } from "react-router-dom";
-import { apiListPacientes, apiDeletePaciente } from "../api"; // 👈 helpers nuevos
+import { apiListPacientes, apiDeletePaciente } from "../api";
 
 /* ===== Botón suave que NO es <button> para evitar estilos globales ===== */
 function AdjButton({ children, onClick, variant = "action" }) {
@@ -14,7 +14,7 @@ function AdjButton({ children, onClick, variant = "action" }) {
     userSelect: "none",
     borderRadius: 8,
     padding: "6px 12px",
-    fontSize: 16,            // 👈 como dijiste, 16
+    fontSize: 16,
     lineHeight: 1,
     cursor: "pointer",
     outline: "none",
@@ -78,8 +78,10 @@ function PacienteRow({
   onVerAdjunto,
   onDescargarAdjunto,
   onEliminarAdjunto,
-  onEliminarPaciente, // 👈 NUEVO: callback para borrar paciente
+  onEliminarPaciente,
+  onEditarPaciente,
   canDelete,
+  canEdit,
 }) {
   const wrapRef = useRef(null);
   const [h, setH] = useState(0);
@@ -138,12 +140,9 @@ function PacienteRow({
           <div className="name" style={{ fontWeight: 600 }}>
             {paciente.nombre} {paciente.apellidos}
           </div>
-          <div className="meta" style={{ color: "var(--muted)", fontSize: 14 }}>
-            {paciente.email} · {paciente.telefono || "—"}
-          </div>
         </div>
 
-        {/* Lado derecho: Ver/Ocultar + botón Eliminar paciente */}
+        {/* Lado derecho: Ver/Ocultar + botones de acción */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span
             style={{
@@ -156,16 +155,28 @@ function PacienteRow({
             {isOpen ? "Ocultar" : "Ver detalle"}
           </span>
 
+          {canEdit && (
+            <AdjButton
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onEditarPaciente?.(paciente);
+              }}
+            >
+              Editar
+            </AdjButton>
+          )}
+
           {canDelete && (
             <AdjButton
               variant="delete"
               onClick={(e) => {
-                e.stopPropagation(); // que no abra/cierre el acordeón
+                e.stopPropagation();
                 e.preventDefault();
                 onEliminarPaciente?.(paciente);
               }}
             >
-              Eliminar paciente
+              Eliminar
             </AdjButton>
           )}
         </div>
@@ -175,6 +186,10 @@ function PacienteRow({
       <div style={{ height: h, overflow: "hidden", transition: "height 300ms" }}>
         <div ref={wrapRef}>
           <div className="detalle" style={{ padding: "0 14px 14px 14px", fontSize: 14 }}>
+            <div className="meta" style={{ color: "var(--muted)", marginBottom: 8 }}>
+              {paciente.email || "—"} · {paciente.telefono || "—"}
+            </div>
+
             {/* Antecedentes */}
             <div style={{ marginTop: 6, marginBottom: 12 }}>
               <div style={{ fontWeight: 600, marginBottom: 6 }}>Antecedentes médicos</div>
@@ -249,6 +264,7 @@ export default function Pacientes() {
     apellidos: "",
     email: "",
     telefono: "",
+    fecha_nacimiento: "",       // 👈 añadido
     antecedentes_medicos: "",
   });
 
@@ -260,15 +276,14 @@ export default function Pacientes() {
 
   const nav = useNavigate();
   const user = getUser();
-  const canDelete = ["admin", "administrador", "fisioterapeuta"]
-    .includes(user?.role?.toLowerCase?.());
+  const roleLower = user?.role?.toLowerCase?.() || "";
+  const canDelete = ["admin", "administrador", "fisioterapeuta"].includes(roleLower);
+  const canEdit   = ["admin", "administrador", "fisioterapeuta"].includes(roleLower);
 
-  // carga inicial y cuando cambie orden
   useEffect(() => { load(); }, []);
   useEffect(() => { load(); }, [order]);
 
   async function load() {
-    // usando helper (axios dentro)
     const items = await apiListPacientes({ q: query, sort: order });
     setList(items);
   }
@@ -285,10 +300,24 @@ export default function Pacientes() {
 
   async function crearPaciente(e) {
     e.preventDefault();
-    const { data } = await api.post("/api/pacientes", form);
+
+    const payload = {
+      ...form,
+      fecha_nacimiento: form.fecha_nacimiento || null,
+    };
+
+    const { data } = await api.post("/api/pacientes", payload);
     const nuevo = data.data;
 
-    setForm({ nombre: "", apellidos: "", email: "", telefono: "", antecedentes_medicos: "" });
+    setForm({
+      nombre: "",
+      apellidos: "",
+      email: "",
+      telefono: "",
+      fecha_nacimiento: "",
+      antecedentes_medicos: "",
+    });
+
     await load();
     setSelected(nuevo);
 
@@ -365,27 +394,26 @@ export default function Pacientes() {
     alert("Adjunto eliminado");
   }
 
-  // 👇 NUEVO: eliminar paciente (con cascada en backend)
   async function eliminarPaciente(p) {
     const ok = confirm(`¿Eliminar al paciente "${p.nombre} ${p.apellidos}"? También se borrarán sus adjuntos.`);
     if (!ok) return;
 
     await apiDeletePaciente(p._id);
 
-    // Quita de la lista
     setList((prev) => prev.filter((x) => x._id !== p._id));
-
-    // Limpia adjuntos en memoria
     setAttachmentsById((prev) => {
       const next = { ...prev };
       delete next[p._id];
       return next;
     });
-
-    // Si era el seleccionado, deselecciona
     setSelected((prev) => (prev?._id === p._id ? null : prev));
 
     alert("Paciente eliminado");
+  }
+
+  function editarPaciente(p) {
+    if (!p?._id) return;
+    nav(`/pacientes/${p._id}/editar`);
   }
 
   function salir() { logout(); nav("/login"); }
@@ -412,8 +440,8 @@ export default function Pacientes() {
         <button onClick={load}>Buscar</button>
         <div style={{ marginLeft: 8, display: "flex", gap: 6, alignItems: "center" }}>
           <span style={{ color: "var(--muted)" }}>Orden:</span>
-          <button onClick={() => setOrder("alpha")} disabled={order === "alpha"} title="Alfabético (apellidos, nombre)">Alfabético</button>
-          <button onClick={() => setOrder("date")} disabled={order === "date"} title="Fecha de creación (más nuevos primero)">Fecha</button>
+          <button onClick={() => setOrder("alpha")} disabled={order === "alpha"}>Alfabético</button>
+          <button onClick={() => setOrder("date")} disabled={order === "date"}>Fecha</button>
         </div>
       </div>
 
@@ -433,8 +461,10 @@ export default function Pacientes() {
                   onVerAdjunto={verAdjunto}
                   onDescargarAdjunto={descargarAdjunto}
                   onEliminarAdjunto={eliminarAdjunto}
-                  onEliminarPaciente={eliminarPaciente}   // 👈 NUEVO
+                  onEliminarPaciente={eliminarPaciente}
+                  onEditarPaciente={editarPaciente}
                   canDelete={canDelete}
+                  canEdit={canEdit}
                 />
               );
             })}
@@ -459,6 +489,14 @@ export default function Pacientes() {
             <div className="form-field">
               <label>Teléfono</label>
               <input placeholder="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+            </div>
+            <div className="form-field">
+              <label>Fecha de nacimiento</label>
+              <input
+                type="date"
+                value={form.fecha_nacimiento || ""}
+                onChange={(e) => setForm({ ...form, fecha_nacimiento: e.target.value })}
+              />
             </div>
             <div className="form-field">
               <label>Antecedentes médicos (opcional)</label>
