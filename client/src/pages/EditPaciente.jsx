@@ -9,21 +9,21 @@ function Btn({ variant = "primary", children, disabled, onClick, type = "button"
   const palette =
     variant === "secondary"
       ? {
-          // texto y borde sutil; fondo muy leve
-          color: "var(--link)",
-          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-          bg: "color-mix(in srgb, var(--link) 8%, transparent)",
-          bgHover: "color-mix(in srgb, var(--link) 16%, transparent)",
-          focus: "0 0 0 3px color-mix(in srgb, var(--link) 32%, transparent)",
-        }
+        // texto y borde sutil; fondo muy leve
+        color: "var(--link)",
+        border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+        bg: "color-mix(in srgb, var(--link) 8%, transparent)",
+        bgHover: "color-mix(in srgb, var(--link) 16%, transparent)",
+        focus: "0 0 0 3px color-mix(in srgb, var(--link) 32%, transparent)",
+      }
       : {
-          // primario más marcado (relleno)
-          color: "white",
-          border: "1px solid color-mix(in srgb, var(--link) 55%, black 0%)",
-          bg: "color-mix(in srgb, var(--link) 72%, black 0%)",
-          bgHover: "color-mix(in srgb, var(--link) 84%, black 0%)",
-          focus: "0 0 0 3px color-mix(in srgb, var(--link) 40%, transparent)",
-        };
+        // primario más marcado (relleno)
+        color: "white",
+        border: "1px solid color-mix(in srgb, var(--link) 55%, black 0%)",
+        bg: "color-mix(in srgb, var(--link) 72%, black 0%)",
+        bgHover: "color-mix(in srgb, var(--link) 84%, black 0%)",
+        focus: "0 0 0 3px color-mix(in srgb, var(--link) 40%, transparent)",
+      };
 
   const base = {
     display: "inline-flex",
@@ -143,7 +143,9 @@ export default function EditPaciente() {
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
         <h1 className="page-title" style={{ margin: 0 }}>Editar paciente</h1>
-        <Link to="/pacientes" className="text-sm underline">Volver</Link>
+        <Link to="/pacientes" className="text-sm" style={{ textDecoration: "underline", color: "var(--link)", fontWeight: 600 }}
+        >Volver</Link>
+
       </div>
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>

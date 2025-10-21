@@ -37,4 +37,64 @@ export async function apiUpdatePaciente(id, payload) {
   return data?.data;
 }
 
+// ===================== FISIOS =====================
+const FISIOS_BASE = '/api/fisios';
+
+export async function apiListFisios({ q = '', sort = 'alpha' } = {}) {
+  const { data } = await api.get(FISIOS_BASE, { params: { q, sort } });
+  return data?.data || [];
+}
+
+export async function apiCreateFisio(payload) {
+  const { data } = await api.post(FISIOS_BASE, payload);
+  if (data?.ok !== true) throw new Error(data?.error || 'Error creando fisio');
+  return data.data;
+}
+
+export async function apiGetFisio(id) {
+  const { data } = await api.get(`${FISIOS_BASE}/${id}`);
+  return data?.data;
+}
+
+export async function apiUpdateFisio(id, payload) {
+  const { data } = await api.put(`${FISIOS_BASE}/${id}`, payload);
+  return data?.data;
+}
+
+export async function apiDeleteFisio(id) {
+  const { data } = await api.delete(`${FISIOS_BASE}/${id}`);
+  if (data?.ok !== true) throw new Error('No se pudo eliminar');
+  return true;
+}
+
+// ===================== VACACIONES =====================
+const VAC_BASE = '/api/vacations';
+
+export async function apiListVacaciones({ from, to, fisioId } = {}) {
+  const params = {};
+  if (from) params.from = from;
+  if (to) params.to = to;
+  if (fisioId) params.fisioId = fisioId;
+  const { data } = await api.get(VAC_BASE, { params });
+  return data?.data || [];
+}
+
+export async function apiListVacacionesDeFisio(fisioId) {
+  const { data } = await api.get(`${VAC_BASE}/fisios/${fisioId}`);
+  return data?.data || [];
+}
+
+export async function apiCreateVacacion(fisioId, payload) {
+  const { data } = await api.post(`${VAC_BASE}/fisios/${fisioId}`, payload);
+  if (data?.ok !== true) throw new Error(data?.error || 'Error creando vacaciones');
+  return data.data;
+}
+
+export async function apiDeleteVacacion(fisioId, vacId) {
+  const { data } = await api.delete(`${VAC_BASE}/fisios/${fisioId}/${vacId}`);
+  if (data?.ok !== true) throw new Error(data?.error || 'Error eliminando vacaciones');
+  return true;
+}
+
+
 export default api;

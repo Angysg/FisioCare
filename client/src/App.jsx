@@ -1,109 +1,55 @@
+// client/src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Layout from "./components/Layout.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login";
-import Pacientes from "./pages/Pacientes";
-import ProtectedRoute from "./components/ProtectedRoute";
+
 import Dashboard from "./pages/Dashboard.jsx";
+import Pacientes from "./pages/Pacientes";
+import EditPaciente from "./pages/EditPaciente.jsx";
+
 import Citas from "./pages/Citas.jsx";
 import Seguimiento from "./pages/Seguimiento.jsx";
 import Pilates from "./pages/Pilates.jsx";
+
 import Fisioterapeutas from "./pages/Fisioterapeutas.jsx";
-import EditPaciente from "./pages/EditPaciente.jsx"; // 👈 NUEVO
+import EditFisioterapeuta from "./pages/EditFisioterapeuta.jsx";
+
+// Pequeño helper para no repetir Layout + ProtectedRoute en cada ruta
+function Protected({ children }) {
+  return (
+    <Layout>
+      <ProtectedRoute>{children}</ProtectedRoute>
+    </Layout>
+  );
+}
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Inicio */}
+        {/* Públicas */}
         <Route path="/" element={<Layout><Home /></Layout>} />
-
-        {/* Login */}
         <Route path="/login" element={<Layout><Login /></Layout>} />
 
-        {/* Dashboard (protegido) */}
-        <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            </Layout>
-          }
-        />
+        {/* Privadas (todas pasan por Layout + ProtectedRoute) */}
+        <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
 
-        {/* Pacientes (protegida) */}
-        <Route
-          path="/pacientes"
-          element={
-            <Layout>
-              <ProtectedRoute>
-                <Pacientes />
-              </ProtectedRoute>
-            </Layout>
-          }
-        />
+        {/* Pacientes */}
+        <Route path="/pacientes" element={<Protected><Pacientes /></Protected>} />
+        <Route path="/pacientes/:id/editar" element={<Protected><EditPaciente /></Protected>} />
 
-        {/* Editar paciente (protegida) */}
-        <Route
-          path="/pacientes/:id/editar"
-          element={
-            <Layout>
-              <ProtectedRoute>
-                <EditPaciente />
-              </ProtectedRoute>
-            </Layout>
-          }
-        />
+        {/* Citas / Seguimiento / Pilates */}
+        <Route path="/citas" element={<Protected><Citas /></Protected>} />
+        <Route path="/seguimiento" element={<Protected><Seguimiento /></Protected>} />
+        <Route path="/pilates" element={<Protected><Pilates /></Protected>} />
 
-        {/* Citas (protegida) */}
-        <Route
-          path="/citas"
-          element={
-            <Layout>
-              <ProtectedRoute>
-                <Citas />
-              </ProtectedRoute>
-            </Layout>
-          }
-        />
-
-        {/* Seguimiento (protegida) */}
-        <Route
-          path="/seguimiento"
-          element={
-            <Layout>
-              <ProtectedRoute>
-                <Seguimiento />
-              </ProtectedRoute>
-            </Layout>
-          }
-        />
-
-        {/* Grupo Pilates (protegida) */}
-        <Route
-          path="/pilates"
-          element={
-            <Layout>
-              <ProtectedRoute>
-                <Pilates />
-              </ProtectedRoute>
-            </Layout>
-          }
-        />
-
-        {/* Fisioterapeutas (protegida, visible solo en UI si admin) */}
-        <Route
-          path="/fisioterapeutas"
-          element={
-            <Layout>
-              <ProtectedRoute>
-                <Fisioterapeutas />
-              </ProtectedRoute>
-            </Layout>
-          }
-        />
+        {/* Fisioterapeutas */}
+        <Route path="/fisioterapeutas" element={<Protected><Fisioterapeutas /></Protected>} />
+        <Route path="/fisioterapeutas/:id/editar" element={<Protected><EditFisioterapeuta /></Protected>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
