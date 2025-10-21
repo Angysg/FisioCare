@@ -1,7 +1,12 @@
 // client/src/pages/Fisioterapeutas.jsx
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiListFisios, apiCreateFisio, apiDeleteFisio } from "../api";
+import {
+  apiListFisios,
+  apiCreateFisio,
+  apiDeleteFisio,
+  apiCreateFisioAccess,
+} from "../api";
 import { logout, getUser } from "../auth";
 
 /* ===== Botón suave reutilizable ===== */
@@ -188,6 +193,8 @@ export default function FisioterapeutasPage() {
     email: "",
     telefono: "",
     especialidades: "",
+    createAccess: false,
+    password: "",
   });
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
@@ -210,9 +217,40 @@ export default function FisioterapeutasPage() {
   async function crearFisio(e) {
     e.preventDefault();
     if (!form.nombre.trim() || !form.apellidos.trim() || !form.email.trim()) return;
-    const payload = { ...form, especialidades: form.especialidades };
-    await apiCreateFisio(payload);
-    setForm({ nombre: "", apellidos: "", email: "", telefono: "", especialidades: "" });
+
+    // 1) Crear el documento Fisio
+    const payload = {
+      nombre: form.nombre,
+      apellidos: form.apellidos,
+      email: form.email,
+      telefono: form.telefono,
+      especialidades: form.especialidades,
+      // ya NO mandamos createAccess/password al backend de fisios
+    };
+
+    const nuevo = await apiCreateFisio(payload);
+
+    // 2) Si se marcó el checkbox, crear acceso de usuario (ruta aparte)
+    if (form.createAccess && nuevo?._id) {
+      try {
+        const r = await apiCreateFisioAccess(nuevo._id, form.password || undefined);
+        if (r?.ok) {
+          const tmp = r?.data?.tempPassword;
+          alert(`Fisioterapeuta creado.\nAcceso creado.${tmp ? `\nContraseña temporal: ${tmp}` : ""}`);
+        } else {
+          alert(r?.error || "Fisioterapeuta creado, pero no se pudo crear el acceso.");
+        }
+      } catch (e) {
+        alert("Fisioterapeuta creado, pero no se pudo crear el acceso.");
+      }
+    } else {
+      alert("Fisioterapeuta creado.");
+    }
+
+    setForm({
+      nombre: "", apellidos: "", email: "", telefono: "",
+      especialidades: "", createAccess: false, password: ""
+    });
     await load();
   }
 
@@ -234,16 +272,14 @@ export default function FisioterapeutasPage() {
 
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      {/* ======= Cabecera unificada (igual que Pacientes) ======= */}
       <div className="page-header">
         <h1 className="page-title">FISIOTERAPEUTAS</h1>
         <div className="page-header__actions">
           <span className="page-header__user">{user?.name} ({user?.role})</span>
-          <button  onClick={salir}>Salir</button>
+          <button onClick={salir}>Salir</button>
         </div>
       </div>
 
-      {/* Buscador + orden */}
       <form
         onSubmit={buscar}
         style={{ marginBottom: 16, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
@@ -264,7 +300,6 @@ export default function FisioterapeutasPage() {
       </form>
 
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
-        {/* Listado */}
         <div>
           <h3>Listado</h3>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
@@ -288,7 +323,6 @@ export default function FisioterapeutasPage() {
           </ul>
         </div>
 
-        {/* Crear fisioterapeuta */}
         <div>
           <h3>Crear fisioterapeuta</h3>
           <form onSubmit={crearFisio} className="card" style={{ display: "grid", gap: 10, marginBottom: 24 }}>
@@ -333,6 +367,31 @@ export default function FisioterapeutasPage() {
                 onChange={(e) => setForm({ ...form, especialidades: e.target.value })}
               />
             </div>
+
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 2 }}>
+              <input
+                id="crearAcceso"
+                type="checkbox"
+                checked={form.createAccess}
+                onChange={(e) => setForm({ ...form, createAccess: e.target.checked })}
+                style={{ width: 18, height: 18 }}
+              />
+              <label htmlFor="crearAcceso" style={{ margin: 0, cursor: "pointer" }}>
+                Crear acceso a la app
+              </label>
+            </div>
+
+            {form.createAccess && (
+              <div className="form-field">
+                <label>Contraseña (opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Déjalo vacío para generar una temporal"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                />
+              </div>
+            )}
 
             <button type="submit" style={{ width: "100%" }}>Crear</button>
           </form>

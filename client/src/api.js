@@ -67,6 +67,17 @@ export async function apiDeleteFisio(id) {
   return true;
 }
 
+export async function apiCreateFisioAccess(id, password) {
+  const { data } = await api.post(`/api/fisio-access/${id}/create`, { password });
+  return data; // { ok, data: { created, tempPassword } }
+}
+
+export async function apiResetFisioPassword(id, password) {
+  const { data } = await api.post(`/api/fisio-access/${id}/reset`, { password });
+  return data; // { ok, data: { reset, tempPassword } }
+}
+
+
 // ===================== VACACIONES =====================
 const VAC_BASE = '/api/vacations';
 

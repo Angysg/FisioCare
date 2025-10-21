@@ -9,6 +9,8 @@ import pacientesRoutes from './routes/pacientes.routes.js';
 import fisiosRouter from './routes/fisios.js';
 import vacationsRouter from './routes/vacations.js';
 
+import fisioAccessRoutes from './routes/fisio.access.routes.js';
+
 dotenv.config();
 
 const app = express();
@@ -21,6 +23,8 @@ app.use('/api/pacientes', pacientesRoutes);
 
 app.use('/api/fisios', fisiosRouter);
 app.use('/api/vacations', vacationsRouter);
+
+app.use("/api/fisio-access", fisioAccessRoutes);
 
 const PORT = process.env.PORT || 4000;
 connectDB().then(() => {

@@ -1,7 +1,7 @@
 // client/src/pages/EditFisioterapeuta.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { apiGetFisio, apiUpdateFisio } from "../api";
+import { apiGetFisio, apiUpdateFisio, apiCreateFisioAccess, apiResetFisioPassword } from "../api";
 
 function Btn({ variant = "primary", children, disabled, onClick, type = "button" }) {
   const palette =
@@ -12,6 +12,14 @@ function Btn({ variant = "primary", children, disabled, onClick, type = "button"
           bg: "color-mix(in srgb, var(--link) 8%, transparent)",
           bgHover: "color-mix(in srgb, var(--link) 16%, transparent)",
           focus: "0 0 0 3px color-mix(in srgb, var(--link) 32%, transparent)",
+        }
+      : variant === "danger"
+      ? {
+          color: "white",
+          border: "1px solid rgba(185,28,28,.5)",
+          bg: "rgba(185,28,28,.85)",
+          bgHover: "rgba(185,28,28,.95)",
+          focus: "0 0 0 3px rgba(185,28,28,.35)",
         }
       : {
           color: "white",
@@ -73,6 +81,11 @@ export default function EditFisioterapeuta() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Acceso a la app
+  const [passAccion, setPassAccion] = useState(""); // texto de nueva contraseña (opcional)
+  const [creatingAccess, setCreatingAccess] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
   useEffect(() => {
     (async () => {
       try {
@@ -112,6 +125,44 @@ export default function EditFisioterapeuta() {
     }
   }
 
+  async function crearAcceso() {
+    if (!confirm("¿Crear acceso de usuario para este fisioterapeuta?")) return;
+    setCreatingAccess(true);
+    try {
+      const r = await apiCreateFisioAccess(id, passAccion || undefined);
+      if (r?.ok) {
+        const tmp = r?.data?.tempPassword;
+        alert(`Acceso creado correctamente.${tmp ? `\nContraseña temporal: ${tmp}` : ""}`);
+        setPassAccion("");
+      } else {
+        alert(r?.error || "No se pudo crear el acceso.");
+      }
+    } catch (e) {
+      alert(e?.response?.data?.error || "No se pudo crear el acceso.");
+    } finally {
+      setCreatingAccess(false);
+    }
+  }
+
+  async function resetPassword() {
+    if (!confirm("¿Resetear la contraseña de este fisioterapeuta?")) return;
+    setResetting(true);
+    try {
+      const r = await apiResetFisioPassword(id, passAccion || undefined);
+      if (r?.ok) {
+        const tmp = r?.data?.tempPassword;
+        alert(`Contraseña restablecida.${tmp ? `\nContraseña temporal: ${tmp}` : ""}`);
+        setPassAccion("");
+      } else {
+        alert(r?.error || "No se pudo resetear la contraseña.");
+      }
+    } catch (e) {
+      alert(e?.response?.data?.error || "No se pudo resetear la contraseña.");
+    } finally {
+      setResetting(false);
+    }
+  }
+
   if (loading) return <div style={{ padding: 24 }}>Cargando...</div>;
 
   const field = { display: "grid", gap: 6 };
@@ -130,7 +181,6 @@ export default function EditFisioterapeuta() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
         <h1 className="page-title" style={{ margin: 0 }}>Editar fisioterapeuta</h1>
 
-        {/* "Volver" con color forzado para tema oscuro */}
         <Link
           to="/fisioterapeutas"
           className="text-sm"
@@ -183,6 +233,34 @@ export default function EditFisioterapeuta() {
           </Btn>
         </div>
       </form>
+
+      {/* ====== ACCESO A LA APP ====== */}
+      <div className="card" style={{ marginTop: 20, padding: 16 }}>
+        <h3 style={{ marginTop: 0, marginBottom: 10 }}>Acceso a la app</h3>
+
+        <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
+          <label style={label}>Nueva contraseña (opcional)</label>
+          <input
+            style={input}
+            type="text"
+            placeholder="Déjalo vacío para generar una temporal"
+            value={passAccion}
+            onChange={(e) => setPassAccion(e.target.value)}
+          />
+          <small style={{ color: "var(--muted)" }}>
+            Si el usuario no existe aún, usa “Crear acceso”. Si ya existe, puedes “Resetear contraseña”.
+          </small>
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <Btn variant="secondary" onClick={crearAcceso} disabled={creatingAccess}>
+            {creatingAccess ? "Creando acceso…" : "Crear acceso"}
+          </Btn>
+          <Btn variant="danger" onClick={resetPassword} disabled={resetting}>
+            {resetting ? "Reseteando…" : "Resetear contraseña"}
+          </Btn>
+        </div>
+      </div>
     </div>
   );
 }
