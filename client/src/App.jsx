@@ -1,58 +1,64 @@
 // client/src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Layout from "./components/Layout.jsx";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/Home.jsx";
-import Login from "./pages/Login";
+import Login from "./pages/Login.jsx";
 
 import Dashboard from "./pages/Dashboard.jsx";
-import Pacientes from "./pages/Pacientes";
-import EditPaciente from "./pages/EditPaciente.jsx";
-
+import Pacientes from "./pages/Pacientes.jsx";
 import Citas from "./pages/Citas.jsx";
 import Seguimiento from "./pages/Seguimiento.jsx";
 import Pilates from "./pages/Pilates.jsx";
-
 import Fisioterapeutas from "./pages/Fisioterapeutas.jsx";
+import Vacaciones from "./pages/Vacaciones.jsx";
+
+import EditPaciente from "./pages/EditPaciente.jsx";
 import EditFisioterapeuta from "./pages/EditFisioterapeuta.jsx";
 
-// Pequeño helper para no repetir Layout + ProtectedRoute en cada ruta
-function Protected({ children }) {
-  return (
-    <Layout>
-      <ProtectedRoute>{children}</ProtectedRoute>
-    </Layout>
-  );
-}
+import "react-big-calendar/lib/css/react-big-calendar.css";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Públicas */}
-        <Route path="/" element={<Layout><Home /></Layout>} />
-        <Route path="/login" element={<Layout><Login /></Layout>} />
+        {/* Públicas (sin barra) */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
 
-        {/* Privadas (todas pasan por Layout + ProtectedRoute) */}
-        <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+        {/* Privadas (barra + protección) */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Pacientes */}
-        <Route path="/pacientes" element={<Protected><Pacientes /></Protected>} />
-        <Route path="/pacientes/:id/editar" element={<Protected><EditPaciente /></Protected>} />
+          <Route path="/pacientes" element={<Pacientes />} />
+          <Route path="/pacientes/:id/editar" element={<EditPaciente />} />
 
-        {/* Citas / Seguimiento / Pilates */}
-        <Route path="/citas" element={<Protected><Citas /></Protected>} />
-        <Route path="/seguimiento" element={<Protected><Seguimiento /></Protected>} />
-        <Route path="/pilates" element={<Protected><Pilates /></Protected>} />
+          <Route path="/citas" element={<Citas />} />
+          <Route path="/seguimiento" element={<Seguimiento />} />
+          <Route path="/pilates" element={<Pilates />} />
 
-        {/* Fisioterapeutas */}
-        <Route path="/fisioterapeutas" element={<Protected><Fisioterapeutas /></Protected>} />
-        <Route path="/fisioterapeutas/:id/editar" element={<Protected><EditFisioterapeuta /></Protected>} />
+          <Route path="/vacaciones" element={<Vacaciones />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/fisioterapeutas" element={<Fisioterapeutas />} />
+          <Route
+            path="/fisioterapeutas/:id/editar"
+            element={<EditFisioterapeuta />}
+          />
+
+          {/* ruta desconocida estando logado → dashboard */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+
+        {/* ruta desconocida NO logado → login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );

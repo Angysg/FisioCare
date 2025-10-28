@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import api from "../api";
-import { logout, getUser } from "../auth";
+import { getUser } from "../auth";
 import { useNavigate } from "react-router-dom";
 import { apiListPacientes, apiDeletePaciente } from "../api";
 
@@ -32,10 +32,14 @@ function AdjButton({ children, onClick, variant = "action" }) {
         }
       : {
           color: "var(--link)",
-          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-          background: "color-mix(in srgb, var(--link) 6%, transparent)",
-          hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
-          focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+          border:
+            "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+          background:
+            "color-mix(in srgb, var(--link) 6%, transparent)",
+          hoverBg:
+            "color-mix(in srgb, var(--link) 15%, transparent)",
+          focusRing:
+            "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
         };
 
   const [bg, setBg] = useState(palette.background);
@@ -61,8 +65,12 @@ function AdjButton({ children, onClick, variant = "action" }) {
         background: bg,
         border: palette.border,
       }}
-      onMouseDown={(e) => { e.currentTarget.style.boxShadow = palette.focusRing; }}
-      onMouseUp={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+      onMouseDown={(e) => {
+        e.currentTarget.style.boxShadow = palette.focusRing;
+      }}
+      onMouseUp={(e) => {
+        e.currentTarget.style.boxShadow = "none";
+      }}
     >
       {children}
     </span>
@@ -137,13 +145,22 @@ function PacienteRow({
         }}
       >
         <div>
-          <div className="name" style={{ fontWeight: 600 }}>
+          <div
+            className="name"
+            style={{ fontWeight: 600 }}
+          >
             {paciente.nombre} {paciente.apellidos}
           </div>
         </div>
 
-        {/* Lado derecho: Ver/Ocultar + botones de acción */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {/* Lado derecho */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
           <span
             style={{
               fontSize: 14,
@@ -182,61 +199,144 @@ function PacienteRow({
         </div>
       </button>
 
-      {/* Cuerpo con animación por altura */}
-      <div style={{ height: h, overflow: "hidden", transition: "height 300ms" }}>
+      {/* Cuerpo expandible */}
+      <div
+        style={{
+          height: h,
+          overflow: "hidden",
+          transition: "height 300ms",
+        }}
+      >
         <div ref={wrapRef}>
-          <div className="detalle" style={{ padding: "0 14px 14px 14px", fontSize: 14 }}>
-            <div className="meta" style={{ color: "var(--muted)", marginBottom: 8 }}>
+          <div
+            className="detalle"
+            style={{
+              padding: "0 14px 14px 14px",
+              fontSize: 14,
+            }}
+          >
+            <div
+              className="meta"
+              style={{
+                color: "var(--muted)",
+                marginBottom: 8,
+              }}
+            >
               {paciente.email || "—"} · {paciente.telefono || "—"}
             </div>
 
             {/* Antecedentes */}
-            <div style={{ marginTop: 6, marginBottom: 12 }}>
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>Antecedentes médicos</div>
+            <div
+              style={{
+                marginTop: 6,
+                marginBottom: 12,
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: 600,
+                  marginBottom: 6,
+                }}
+              >
+                Antecedentes médicos
+              </div>
               <div style={{ whiteSpace: "pre-wrap" }}>
                 {paciente.antecedentes_medicos?.trim()
                   ? paciente.antecedentes_medicos
-                  : <i style={{ color: "var(--muted)" }}>Sin antecedentes</i>}
+                  : (
+                    <i style={{ color: "var(--muted)" }}>
+                      Sin antecedentes
+                    </i>
+                  )}
               </div>
             </div>
 
             {/* Adjuntos */}
             <div>
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>Adjuntos</div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  marginBottom: 6,
+                }}
+              >
+                Adjuntos
+              </div>
               {attachments.length === 0 ? (
-                <i style={{ color: "var(--muted)" }}>No hay adjuntos</i>
+                <i style={{ color: "var(--muted)" }}>
+                  No hay adjuntos
+                </i>
               ) : (
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                  }}
+                >
                   {attachments.map((a) => (
                     <li
                       key={a._id}
                       style={{
                         display: "flex",
-                        justifyContent: "space-between",
+                        justifyContent:
+                          "space-between",
                         alignItems: "center",
                         padding: "6px 0",
-                        borderBottom: "1px solid var(--border)",
+                        borderBottom:
+                          "1px solid var(--border)",
                         gap: 8,
                       }}
                     >
                       <span
                         style={{
                           overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          textOverflow:
+                            "ellipsis",
                           whiteSpace: "nowrap",
                           maxWidth: "60%",
                         }}
                         title={a.originalName}
                       >
                         {a.originalName}{" "}
-                        <small style={{ color: "var(--muted)" }}>({a.mimeType})</small>
+                        <small
+                          style={{
+                            color:
+                              "var(--muted)",
+                          }}
+                        >
+                          ({a.mimeType})
+                        </small>
                       </span>
 
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <AdjButton onClick={() => onVerAdjunto(a)}>Ver</AdjButton>
-                        <AdjButton onClick={() => onDescargarAdjunto(a)}>Descargar</AdjButton>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                        }}
+                      >
+                        <AdjButton
+                          onClick={() =>
+                            onVerAdjunto(a)
+                          }
+                        >
+                          Ver
+                        </AdjButton>
+                        <AdjButton
+                          onClick={() =>
+                            onDescargarAdjunto(a)
+                          }
+                        >
+                          Descargar
+                        </AdjButton>
                         {canDelete && (
-                          <AdjButton variant="delete" onClick={() => onEliminarAdjunto(a)}>
+                          <AdjButton
+                            variant="delete"
+                            onClick={() =>
+                              onEliminarAdjunto(
+                                a
+                              )
+                            }
+                          >
                             Eliminar
                           </AdjButton>
                         )}
@@ -264,7 +364,7 @@ export default function Pacientes() {
     apellidos: "",
     email: "",
     telefono: "",
-    fecha_nacimiento: "",       // 👈 añadido
+    fecha_nacimiento: "",
     antecedentes_medicos: "",
   });
 
@@ -276,12 +376,21 @@ export default function Pacientes() {
 
   const nav = useNavigate();
   const user = getUser();
-  const roleLower = user?.role?.toLowerCase?.() || "";
-  const canDelete = ["admin", "administrador", "fisioterapeuta"].includes(roleLower);
-  const canEdit   = ["admin", "administrador", "fisioterapeuta"].includes(roleLower);
 
-  useEffect(() => { load(); }, []);
-  useEffect(() => { load(); }, [order]);
+  const roleLower = user?.role?.toLowerCase?.() || "";
+  const canDelete = ["admin", "administrador", "fisioterapeuta"].includes(
+    roleLower
+  );
+  const canEdit = ["admin", "administrador", "fisioterapeuta"].includes(
+    roleLower
+  );
+
+  useEffect(() => {
+    load();
+  }, []);
+  useEffect(() => {
+    load();
+  }, [order]);
 
   async function load() {
     const items = await apiListPacientes({ q: query, sort: order });
@@ -353,7 +462,9 @@ export default function Pacientes() {
   }
 
   async function verAdjunto(adj) {
-    const res = await api.get(`/api/pacientes/adjuntos/${adj._id}`, { responseType: "blob" });
+    const res = await api.get(`/api/pacientes/adjuntos/${adj._id}`, {
+      responseType: "blob",
+    });
     const type = adj.mimeType || "application/octet-stream";
     const blob = new Blob([res.data], { type });
     const url = URL.createObjectURL(blob);
@@ -373,8 +484,12 @@ export default function Pacientes() {
   }
 
   async function descargarAdjunto(adj) {
-    const res = await api.get(`/api/pacientes/adjuntos/${adj._id}`, { responseType: "blob" });
-    const blob = new Blob([res.data], { type: adj.mimeType || "application/octet-stream" });
+    const res = await api.get(`/api/pacientes/adjuntos/${adj._id}`, {
+      responseType: "blob",
+    });
+    const blob = new Blob([res.data], {
+      type: adj.mimeType || "application/octet-stream",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -387,7 +502,9 @@ export default function Pacientes() {
 
   async function eliminarAdjunto(adj) {
     if (!selected?._id) return;
-    const ok = confirm(`¿Eliminar "${adj.originalName}"? Esta acción no se puede deshacer.`);
+    const ok = confirm(
+      `¿Eliminar "${adj.originalName}"? Esta acción no se puede deshacer.`
+    );
     if (!ok) return;
     await api.delete(`/api/pacientes/adjuntos/${adj._id}`);
     await loadAttachments(selected._id);
@@ -395,7 +512,9 @@ export default function Pacientes() {
   }
 
   async function eliminarPaciente(p) {
-    const ok = confirm(`¿Eliminar al paciente "${p.nombre} ${p.apellidos}"? También se borrarán sus adjuntos.`);
+    const ok = confirm(
+      `¿Eliminar al paciente "${p.nombre} ${p.apellidos}"? También se borrarán sus adjuntos.`
+    );
     if (!ok) return;
 
     await apiDeletePaciente(p._id);
@@ -411,26 +530,33 @@ export default function Pacientes() {
     alert("Paciente eliminado");
   }
 
+  async function eliminarAdjuntoDeLista(adj) {
+    // opcional: si quieres botón extra, aquí
+  }
+
   function editarPaciente(p) {
     if (!p?._id) return;
     nav(`/pacientes/${p._id}/editar`);
   }
 
-  function salir() { logout(); nav("/login"); }
-
   const botonAdjuntoDeshabilitado = !selected || !file;
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <div className="page-header">
-        <h1 className="page-title">PACIENTES</h1>
-        <div className="page-header__actions">
-          <span className="page-header__user">{user?.name} ({user?.role})</span>
-          <button onClick={salir}>Salir</button>
-        </div>
-      </div>
+    <main
+      className="container"
+      style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}
+    >
+      <h1 className="page-title">PACIENTES</h1>
 
-      <div style={{ marginBottom: 16, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+      <div
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
         <input
           placeholder="Buscar por nombre/apellidos/email..."
           value={query}
@@ -438,17 +564,49 @@ export default function Pacientes() {
           style={{ width: 380 }}
         />
         <button onClick={load}>Buscar</button>
-        <div style={{ marginLeft: 8, display: "flex", gap: 6, alignItems: "center" }}>
+        <div
+          style={{
+            marginLeft: 8,
+            display: "flex",
+            gap: 6,
+            alignItems: "center",
+          }}
+        >
           <span style={{ color: "var(--muted)" }}>Orden:</span>
-          <button onClick={() => setOrder("alpha")} disabled={order === "alpha"}>Alfabético</button>
-          <button onClick={() => setOrder("date")} disabled={order === "date"}>Fecha</button>
+          <button
+            onClick={() => setOrder("alpha")}
+            disabled={order === "alpha"}
+          >
+            Alfabético
+          </button>
+          <button
+            onClick={() => setOrder("date")}
+            disabled={order === "date"}
+          >
+            Fecha
+          </button>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1.4fr 1fr",
+          gap: 24,
+        }}
+      >
         <div>
           <h3>Listado</h3>
-          <ul id="listaPacientes" style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
+          <ul
+            id="listaPacientes"
+            style={{
+              listStyle: "none",
+              padding: 0,
+              margin: 0,
+              display: "grid",
+              gap: 12,
+            }}
+          >
             {list.map((p) => {
               const open = selected?._id === p._id;
               return (
@@ -457,7 +615,11 @@ export default function Pacientes() {
                   paciente={p}
                   isOpen={open}
                   attachments={attachmentsById[p._id] || []}
-                  onToggle={() => setSelected((prev) => (prev?._id === p._id ? null : p))}
+                  onToggle={() =>
+                    setSelected((prev) =>
+                      prev?._id === p._id ? null : p
+                    )
+                  }
                   onVerAdjunto={verAdjunto}
                   onDescargarAdjunto={descargarAdjunto}
                   onEliminarAdjunto={eliminarAdjunto}
@@ -473,29 +635,79 @@ export default function Pacientes() {
 
         <div>
           <h3>Crear paciente</h3>
-          <form onSubmit={crearPaciente} className="card" style={{ display: "grid", gap: 10, marginBottom: 24 }}>
+          <form
+            onSubmit={crearPaciente}
+            className="card"
+            style={{
+              display: "grid",
+              gap: 10,
+              marginBottom: 24,
+            }}
+          >
             <div className="form-field">
               <label>Nombre</label>
-              <input placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
+              <input
+                placeholder="Nombre"
+                value={form.nombre}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    nombre: e.target.value,
+                  })
+                }
+              />
             </div>
             <div className="form-field">
               <label>Apellidos</label>
-              <input placeholder="Apellidos" value={form.apellidos} onChange={(e) => setForm({ ...form, apellidos: e.target.value })} />
+              <input
+                placeholder="Apellidos"
+                value={form.apellidos}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    apellidos: e.target.value,
+                  })
+                }
+              />
             </div>
             <div className="form-field">
               <label>Email</label>
-              <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <input
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    email: e.target.value,
+                  })
+                }
+              />
             </div>
             <div className="form-field">
               <label>Teléfono</label>
-              <input placeholder="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+              <input
+                placeholder="Teléfono"
+                value={form.telefono}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    telefono: e.target.value,
+                  })
+                }
+              />
             </div>
             <div className="form-field">
               <label>Fecha de nacimiento</label>
               <input
                 type="date"
                 value={form.fecha_nacimiento || ""}
-                onChange={(e) => setForm({ ...form, fecha_nacimiento: e.target.value })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    fecha_nacimiento: e.target.value,
+                  })
+                }
               />
             </div>
             <div className="form-field">
@@ -503,25 +715,58 @@ export default function Pacientes() {
               <textarea
                 placeholder="Antecedentes médicos (opcional)"
                 value={form.antecedentes_medicos}
-                onChange={(e) => setForm({ ...form, antecedentes_medicos: e.target.value })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    antecedentes_medicos:
+                      e.target.value,
+                  })
+                }
                 rows={4}
               />
             </div>
-            <button type="submit" style={{ width: "100%" }}>Crear</button>
+            <button
+              type="submit"
+              style={{ width: "100%" }}
+            >
+              Crear
+            </button>
           </form>
 
           <h3>Adjuntar archivo al seleccionado</h3>
           <div style={{ marginBottom: 6 }}>
-            {selected ? <span>Paciente: <b>{selected.nombre} {selected.apellidos}</b></span>
-                      : <i style={{ color: "var(--muted)" }}>Sin seleccionar</i>}
+            {selected ? (
+              <span>
+                Paciente:{" "}
+                <b>
+                  {selected.nombre}{" "}
+                  {selected.apellidos}
+                </b>
+              </span>
+            ) : (
+              <i style={{ color: "var(--muted)" }}>
+                Sin seleccionar
+              </i>
+            )}
           </div>
 
-          <input type="file" ref={fileInputRef} onChange={(e) => setFile(e.target.files?.[0] || null)} />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={(e) =>
+              setFile(e.target.files?.[0] || null)
+            }
+          />
           <div style={{ marginTop: 8 }}>
-            <button onClick={subirAdjunto} disabled={botonAdjuntoDeshabilitado}>Subir adjunto</button>
+            <button
+              onClick={subirAdjunto}
+              disabled={!(selected && file)}
+            >
+              Subir adjunto
+            </button>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

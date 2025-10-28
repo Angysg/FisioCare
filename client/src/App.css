@@ -1,68 +1,76 @@
-:root{
+:root {
   /* Dark (por defecto) */
-  --bg:#0f172a;
-  --surface:#1c2840;
-  --text:#e2e8f0;
-  --muted:#94a3b8;
-  --border:#1f2937;
-  --link:#60a5fa;
-  --link-hover:#93c5fd;
+  --bg: #0f172a;
+  --surface: #1c2840;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #1f2937;
+  --link: #60a5fa;
+  --link-hover: #93c5fd;
 
   /* Panels / list items */
-  --panel: rgba(255,255,255,0.05);
-  --panel-hover: rgba(255,255,255,0.08);
+  --panel: rgba(255, 255, 255, 0.05);
+  --panel-hover: rgba(255, 255, 255, 0.08);
 
   /* Card bienvenida */
-  --card-bg: rgba(255,255,255,0.06);
-  --card-shadow: 0 6px 24px rgba(0,0,0,.35);
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-shadow: 0 6px 24px rgba(0, 0, 0, .35);
 
   /* Inputs */
-  --input-bg:#0b1220; 
+  --input-bg: #0b1220;
   --input-text: var(--text);
 
   /* Botones (glass) */
-  --btn-bg: rgba(96,165,250,.25);
-  --btn-bg-hover: rgba(147,197,253,.45);
-  --btn-text:#f9fafb;
-  --btn-border: rgba(255,255,255,.12);
+  --btn-bg: rgba(96, 165, 250, .25);
+  --btn-bg-hover: rgba(147, 197, 253, .45);
+  --btn-text: #f9fafb;
+  --btn-border: rgba(255, 255, 255, .12);
 
   /* Page title */
-  --title:#e5edff;
-  --title-shadow: 0 2px 0 rgba(0,0,0,.25);
+  --title: #e5edff;
+  --title-shadow: 0 2px 0 rgba(0, 0, 0, .25);
 }
 
-:root.light{
-  --bg:#e6f0ff;        /* celeste claro */
-  --surface:#ffffff;
-  --text:#0a0a0a;
-  --muted:#475569;
-  --border:#dbe1ea;
-  --link:#2563eb;
-  --link-hover:#1d4ed8;
+:root.light {
+  --bg: #e6f0ff;
+  /* celeste claro */
+  --surface: #ffffff;
+  --text: #0a0a0a;
+  --muted: #475569;
+  --border: #dbe1ea;
+  --link: #2563eb;
+  --link-hover: #1d4ed8;
 
-  --panel: rgba(255,255,255,.65);    /* sin caja blanca sólida */
-  --panel-hover: rgba(255,255,255,.8);
+  --panel: rgba(255, 255, 255, .65);
+  /* sin caja blanca sólida */
+  --panel-hover: rgba(255, 255, 255, .8);
 
-  --card-bg:#ffffff;
-  --card-shadow: 0 6px 24px rgba(0,0,0,.10);
+  --card-bg: #ffffff;
+  --card-shadow: 0 6px 24px rgba(0, 0, 0, .10);
 
-  --input-bg:#ffffff;
-  --input-text:#0f172a;
+  --input-bg: #ffffff;
+  --input-text: #0f172a;
 
-  --btn-bg: rgba(59,130,246,.80);
-  --btn-bg-hover: rgba(37,99,235,.95);
-  --btn-text:#ffffff;
+  --btn-bg: rgba(59, 130, 246, .80);
+  --btn-bg-hover: rgba(37, 99, 235, .95);
+  --btn-text: #ffffff;
   --btn-border: transparent;
 
-  --title:#0b225a;
+  --title: #0b225a;
   --title-shadow: none;
 }
 
 /* =========================
    Base
    ========================= */
-html,body,#root{height:100%;margin:0}
-body{
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0
+}
+
+body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -70,25 +78,38 @@ body{
 }
 
 /* Contenedor general: recupera márgenes y respiro */
-.container{
+.container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px;
 }
 
 /* Header */
-header{
-  position: sticky; top:0; z-index:10;
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
-nav a{
-  color: var(--link); text-decoration: none; font-weight: 600; margin-right: 1rem;
-  padding: 6px 8px; border-radius: 8px; border: 1px solid transparent;
+
+nav a {
+  color: var(--link);
+  text-decoration: none;
+  font-weight: 600;
+  margin-right: 1rem;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
 }
-nav a:hover{ color: var(--link-hover); text-decoration: underline; }
+
+nav a:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
 /* Estado activo para NavLink */
-nav a.active{
+nav a.active {
   background: color-mix(in srgb, var(--link) 12%, transparent);
   border-color: var(--border);
 }
@@ -96,7 +117,7 @@ nav a.active{
 /* =========================
    Título de página
    ========================= */
-.page-title{
+.page-title {
   font-size: 2rem;
   letter-spacing: .02em;
   font-weight: 800;
@@ -108,7 +129,7 @@ nav a.active{
 /* =========================
    Card simple (bienvenida u otros)
    ========================= */
-.card{
+.card {
   background: var(--card-bg);
   border-radius: 1rem;
   box-shadow: var(--card-shadow);
@@ -118,67 +139,123 @@ nav a.active{
 /* =========================
    Formularios (labels arriba)
    ========================= */
-.form-field{ margin-bottom: .9rem; }
-label{
-  display:block; font-weight: 600; margin-bottom: .35rem;
+.form-field {
+  margin-bottom: .9rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: .35rem;
   color: var(--text);
 }
-input, select, textarea, button{
-  font: inherit; border-radius: 8px; border:1px solid var(--border); box-sizing: border-box;
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-sizing: border-box;
 }
-input, select, textarea{
-  color: var(--input-text); background: var(--input-bg);
-  padding: 10px 12px; width: 100%;
+
+input,
+select,
+textarea {
+  color: var(--input-text);
+  background: var(--input-bg);
+  padding: 10px 12px;
+  width: 100%;
   transition: border-color .2s ease, box-shadow .2s ease;
 }
-input::placeholder, textarea::placeholder{ color: var(--muted); opacity: .9; }
 
-input:focus, select:focus, textarea:focus{
-  outline: none;
-  border-color: rgba(59,130,246,.45);
-  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: .9;
 }
-textarea{ min-height: 110px; resize: vertical; line-height: 1.4; }
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, .45);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.4;
+}
 
 /* =========================
    Botones (glass)
    ========================= */
-button{
+button {
   border: 1px solid var(--btn-border);
   background: var(--btn-bg);
   color: var(--btn-text);
-  font-size: 1rem; padding: .6rem 1.4rem;
+  font-size: 1rem;
+  padding: .6rem 1.4rem;
   cursor: pointer;
   transition: transform .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
-  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
 }
-button:hover{ background: var(--btn-bg-hover); transform: scale(1.03); }
-button[disabled]{ opacity:.6; cursor:not-allowed }
+
+button:hover {
+  background: var(--btn-bg-hover);
+  transform: scale(1.03);
+}
+
+button[disabled] {
+  opacity: .6;
+  cursor: not-allowed
+}
 
 /* =========================
    Listas (pacientes)
    ========================= */
-.list{ display: grid; gap: .75rem; }
-.list-item{
+.list {
+  display: grid;
+  gap: .75rem;
+}
+
+.list-item {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: .75rem .9rem;
   transition: background .2s ease, border-color .2s ease, transform .1s ease;
 }
-.list-item:hover{ background: var(--panel-hover); transform: translateY(-1px); }
-.list-item .name{ font-weight: 700; }
-.list-item .meta{ color: var(--muted); font-size: .95rem; }
+
+.list-item:hover {
+  background: var(--panel-hover);
+  transform: translateY(-1px);
+}
+
+.list-item .name {
+  font-weight: 700;
+}
+
+.list-item .meta {
+  color: var(--muted);
+  font-size: .95rem;
+}
 
 /* =========================
    Home (tarjetas de navegación)
    ========================= */
-.grid{
-  display: grid; gap: 1rem;
+.grid {
+  display: grid;
+  gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
-.nav-card{
+
+.nav-card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -186,18 +263,23 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
   text-align: center;
   transition: background .2s ease, transform .12s ease, box-shadow .2s ease;
 }
-.nav-card:hover{
+
+.nav-card:hover {
   background: var(--panel-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
 }
-.nav-card h3{ margin:.5rem 0; }
+
+.nav-card h3 {
+  margin: .5rem 0;
+}
 
 /* ====== LISTADO PACIENTES ====== */
 #listaPacientes {
   display: grid;
   gap: 12px;
 }
+
 #listaPacientes .pac-item {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -207,23 +289,26 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
   display: flex;
   flex-direction: column;
 }
+
 #listaPacientes .pac-item:hover {
   background: var(--panel-hover);
   transform: translateY(-1px);
 }
+
 #listaPacientes .pac-item .name {
   font-weight: 700;
   line-height: 1.25;
   margin-bottom: 2px;
   color: var(--text);
 }
+
 #listaPacientes .pac-item .meta {
   font-size: .95rem;
   color: color-mix(in oklab, var(--text) 72%, transparent);
 }
 
 /* Cabecera local de página */
-.page-header{
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -232,14 +317,20 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
   border: 0 !important;
   padding: 0;
 }
-.page-header__actions{
-  display: flex; gap: 8px; align-items: center;
+
+.page-header__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
-.page-header__user{ color: var(--muted); }
+
+.page-header__user {
+  color: var(--muted);
+}
 
 /* Título de página */
-.page-title{
-  margin: 0; 
+.page-title {
+  margin: 0;
   font-size: 2rem;
   letter-spacing: .02em;
   font-weight: 800;
@@ -256,8 +347,12 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
   gap: 16px;
   margin-top: 12px;
 }
+
 /* Evita que los enlaces del dashboard cambien el color visitado */
-.card-link, .card-link:visited { color: inherit; }
+.card-link,
+.card-link:visited {
+  color: inherit;
+}
 
 .card-link {
   display: block;
@@ -268,22 +363,115 @@ button[disabled]{ opacity:.6; cursor:not-allowed }
   text-decoration: none;
   transition: box-shadow .15s ease, transform .05s ease, border-color .15s ease;
 }
+
 .card-link:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,0,0,.10);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .10);
   border-color: var(--card-bd-strong, var(--border));
 }
-.card-link h2, .card-link p { margin: 0; color: var(--text); }
-.card-link p { color: var(--muted); margin-top: .35rem; }
+
+.card-link h2,
+.card-link p {
+  margin: 0;
+  color: var(--text);
+}
+
+.card-link p {
+  color: var(--muted);
+  margin-top: .35rem;
+}
 
 /* Variables específicas para las tarjetas del dashboard */
 body.light {
-  --card-bg: #ffffff;                 /* tarjetas claras y limpias */
+  --card-bg: #ffffff;
+  /* tarjetas claras y limpias */
   --card-bd: rgba(15, 23, 42, .15);
   --card-bd-strong: rgba(15, 23, 42, .30);
 }
+
 body.dark {
-  --card-bg: #151c2b;                 /* como el listado de pacientes */
+  --card-bg: #151c2b;
+  /* como el listado de pacientes */
   --card-bd: rgba(255, 255, 255, .12);
   --card-bd-strong: rgba(255, 255, 255, .24);
+}
+
+
+/* Vacaciones: espacios equilibrados */
+.vacaciones-page .form-card {
+  margin-bottom: 12px !important;
+}
+
+.vacaciones-page .filter-card {
+  margin-top: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+.vacaciones-page .calendar-block {
+  margin-top: 16px !important;
+}
+
+/* Botón del filtro: separado del select SOLO en móvil */
+.vacaciones-page .only-mine-btn {
+  margin-top: 8px;
+}
+
+@media (min-width: 768px) {
+  .vacaciones-page .only-mine-btn {
+    margin-top: 0;
+  }
+
+  /* ya va en la misma fila */
+}
+
+/* Calendario (react-big-calendar) compacto */
+.vacaciones-page .vac-calendar .rbc-toolbar {
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px !important;
+}
+
+.vacaciones-page .vac-calendar .rbc-toolbar .rbc-btn-group button {
+  margin-right: 4px;
+}
+
+/* Botón del filtro: separado del select SOLO en móvil; en desktop no se estira */
+.vacaciones-page .only-mine-btn {
+  margin-top: 8px;
+}
+
+@media (min-width: 768px) {
+  .vacaciones-page .only-mine-btn {
+    margin-top: 0;
+  }
+}
+
+/* Un pelín más de aire bajo el grid del form para el botón Guardar */
+.vacaciones-page .vac-form .actions {
+  margin-top: 16px;
+}
+
+/* Grid fija para el bloque de filtro: 1fr + auto en desktop */
+.vacaciones-page .filter-grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 768px){
+  .vacaciones-page .filter-grid{
+    grid-template-columns: 1fr auto;  /* botón tamaño contenido */
+    align-items: end;
+  }
+}
+
+/* El botón no se estira y queda compacto */
+.vacaciones-page .only-mine-btn{
+  display: inline-block;
+  width: auto;
+  margin-top: 8px;        /* separación en móvil */
+}
+@media (min-width: 768px){
+  .vacaciones-page .only-mine-btn{
+    margin-top: 0;        /* misma línea que el select */
+  }
 }

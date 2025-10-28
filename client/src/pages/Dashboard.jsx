@@ -1,25 +1,37 @@
 import { Link } from "react-router-dom";
-import { getRole } from "../session";
+import { getUser } from "../auth";
 
 export default function Dashboard() {
-  const role = getRole(); // "admin" | "fisioterapeuta"
+  const user = getUser();
+  const role = user?.role || user?.rol || user?.tipo || "";
 
   const comunes = [
     { title: "Pacientes", to: "/pacientes", desc: "Gestión de fichas" },
     { title: "Citas", to: "/citas", desc: "Agenda y reservas" },
-    { title: "Seguimiento y Valoración", to: "/seguimiento", desc: "Controles y notas" },
+    {
+      title: "Seguimiento y Valoración",
+      to: "/seguimiento",
+      desc: "Controles y notas",
+    },
     { title: "Grupo Pilates", to: "/pilates", desc: "Grupos y horarios" },
+    { title: "Vacaciones", to: "/vacaciones", desc: "Calendario y gestión" },
   ];
 
   const adminOnly = [
-    { title: "Fisioterapeutas", to: "/fisioterapeutas", desc: "Altas, permisos y roles" },
+    {
+      title: "Fisioterapeutas",
+      to: "/fisioterapeutas",
+      desc: "Altas, permisos y roles",
+    },
   ];
 
   const cards = role === "admin" ? [...comunes, ...adminOnly] : comunes;
 
   return (
     <main className="container">
-      <h1 className="page-title" style={{ margin: "1rem 0" }}>Panel</h1>
+      <h1 className="page-title" style={{ margin: "1rem 0" }}>
+        Panel
+      </h1>
 
       <div className="dashboard-list">
         {cards.map((c) => (

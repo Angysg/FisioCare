@@ -6,7 +6,7 @@ const VacationSchema = new mongoose.Schema({
   startDate:  { type: Date, required: true },
   endDate:    { type: Date, required: true }, // inclusive para el front
   color:      { type: String, trim: true, default: '' }, // opcional: color de evento
-  createdBy:  { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // opcional
+  notes:     { type: String, maxlength: 300 },
 }, { timestamps: true });
 
 export const Vacation = mongoose.model('Vacation', VacationSchema);

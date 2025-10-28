@@ -40,6 +40,7 @@ export async function apiUpdatePaciente(id, payload) {
 // ===================== FISIOS =====================
 const FISIOS_BASE = '/api/fisios';
 
+
 export async function apiListFisios({ q = '', sort = 'alpha' } = {}) {
   const { data } = await api.get(FISIOS_BASE, { params: { q, sort } });
   return data?.data || [];
@@ -81,30 +82,40 @@ export async function apiResetFisioPassword(id, password) {
 // ===================== VACACIONES =====================
 const VAC_BASE = '/api/vacations';
 
-export async function apiListVacaciones({ from, to, fisioId } = {}) {
+export async function apiListVacations({ from, to } = {}) {
   const params = {};
   if (from) params.from = from;
-  if (to) params.to = to;
-  if (fisioId) params.fisioId = fisioId;
+  if (to)   params.to   = to;
   const { data } = await api.get(VAC_BASE, { params });
   return data?.data || [];
 }
 
-export async function apiListVacacionesDeFisio(fisioId) {
-  const { data } = await api.get(`${VAC_BASE}/fisios/${fisioId}`);
-  return data?.data || [];
-}
-
-export async function apiCreateVacacion(fisioId, payload) {
-  const { data } = await api.post(`${VAC_BASE}/fisios/${fisioId}`, payload);
-  if (data?.ok !== true) throw new Error(data?.error || 'Error creando vacaciones');
+export async function apiCreateVacation({ startDate, endDate, notes = '', fisioId }) {
+  const payload = { startDate, endDate, notes };
+  if (fisioId) payload.fisioId = fisioId;
+  const { data } = await api.post(VAC_BASE, payload);
+  if (data?.ok !== true) throw new Error(data?.error || 'No se pudo crear');
   return data.data;
 }
 
-export async function apiDeleteVacacion(fisioId, vacId) {
-  const { data } = await api.delete(`${VAC_BASE}/fisios/${fisioId}/${vacId}`);
-  if (data?.ok !== true) throw new Error(data?.error || 'Error eliminando vacaciones');
+export async function apiDeleteVacation(id) {
+  const { data } = await api.delete(`${VAC_BASE}/${id}`);
+  if (data?.ok !== true) throw new Error(data?.error || 'No se pudo eliminar');
   return true;
+}
+
+// Fisioterapeutas (para el selector del formulario)
+export async function apiListFisioterapeutasSimple() {
+  // ajusta si tu endpoint real difiere:
+  // puedes tener filtros ?q=&sort=alpha, etc. Usamos mínimamente.
+  const { data } = await api.get(FISIOS_BASE, { params: { sort: 'alpha' } });
+  const list = data?.data || data; // adapta a tu forma de respuesta
+  return (list || []).map(f => ({
+    _id: f._id,
+    nombre: f.nombre,
+    apellidos: f.apellidos,
+    email: f.email,
+  }));
 }
 
 
