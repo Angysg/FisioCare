@@ -67,7 +67,7 @@ export default function Login() {
     }
   }
 
-  // 🎨 Fondo pantalla → azul claro igual que la landing
+  // Fondo pantalla → azul claro igual que la landing
   const pageBackgroundStyle = {
     backgroundColor: darkNow
       ? "var(--surface)"
