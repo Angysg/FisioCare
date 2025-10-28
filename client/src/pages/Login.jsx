@@ -4,39 +4,6 @@ import { saveSession } from "../auth";
 import { useNavigate } from "react-router-dom";
 import PublicHeader from "../components/PublicHeader.jsx";
 
-// Detecta si el tema activo es oscuro leyendo las variables CSS
-function isDarkThemeByVars() {
-  const bg = getComputedStyle(document.body)
-    .getPropertyValue("--bg")
-    .trim();
-
-  let r = 255, g = 255, b = 255;
-  if (bg.startsWith("rgb")) {
-    const nums = bg
-      .replace(/rgba?\(/, "")
-      .replace(")", "")
-      .split(",")
-      .map((n) => parseFloat(n.trim()));
-    [r, g, b] = nums;
-  } else if (bg.startsWith("#")) {
-    const hex = bg.slice(1);
-    if (hex.length === 3) {
-      r = parseInt(hex[0] + hex[0], 16);
-      g = parseInt(hex[1] + hex[1], 16);
-      b = parseInt(hex[2] + hex[2], 16);
-    } else if (hex.length >= 6) {
-      r = parseInt(hex.slice(0, 2), 16);
-      g = parseInt(hex.slice(2, 4), 16);
-      b = parseInt(hex.slice(4, 6), 16);
-    }
-  }
-  const luminance =
-    0.2126 * (r / 255) +
-    0.7152 * (g / 255) +
-    0.0722 * (b / 255);
-  return luminance < 0.4;
-}
-
 export default function Login() {
   const [email, setEmail] = useState("admin@clinica.com");
   const [password, setPassword] = useState("admin123");
@@ -45,7 +12,6 @@ export default function Login() {
   const [showPass, setShowPass] = useState(false);
 
   const nav = useNavigate();
-  const darkNow = isDarkThemeByVars();
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -67,19 +33,16 @@ export default function Login() {
     }
   }
 
-  // Fondo pantalla → azul claro igual que la landing
-  const pageBackgroundStyle = {
-    backgroundColor: darkNow
-      ? "var(--surface)"
-      : "#e6f0ff", // color azul claro del modo claro
+  // Igual que en Home corregida:
+  // main no fuerza color de fondo. El body (via tema) pinta var(--bg).
+  const mainStyle = {
     minHeight: "calc(100vh - 60px)",
     display: "grid",
     placeItems: "center",
     padding: "2rem 1rem 3rem",
-    transition: "background 0.4s ease",
   };
 
-  // Tarjeta (sin cambios)
+  // Tarjeta de login: usa variables del tema
   const cardStyle = {
     background: "var(--card-bg)",
     border: "1px solid var(--border)",
@@ -104,8 +67,10 @@ export default function Login() {
     boxSizing: "border-box",
   };
 
-  // Botón 🤫 mostrar/ocultar contraseña
-  const faceBtnStyle = {
+  // Botón 🤫 mostrar/ocultar contraseña.
+  // Ya no dependemos de darkNow; usamos solo variables,
+  // y un pequeño efecto hover que ajusta brightness.
+  const faceBtnBaseStyle = {
     position: "absolute",
     right: 8,
     top: "50%",
@@ -121,11 +86,13 @@ export default function Login() {
     userSelect: "none",
     lineHeight: 1,
     padding: 0,
-    boxShadow: darkNow
-      ? "0 1px 4px rgba(0,0,0,.6)"
-      : "0 1px 4px rgba(0,0,0,.06)",
+    boxShadow: "0 1px 4px rgba(0,0,0,.4)",
+    transition: "filter .15s ease, box-shadow .15s ease, background .15s ease",
   };
 
+  // Botón submit
+  // Usa las mismas variables globales que ya definimos en app.css para botones,
+  // pero reforzamos ancho y tipografía aquí.
   const submitBtnStyle = {
     width: "100%",
     fontSize: "1.1rem",
@@ -134,12 +101,20 @@ export default function Login() {
     padding: "12px 16px",
     marginTop: 4,
     opacity: loading ? 0.6 : 1,
+    borderRadius: 8,
+    border: "1px solid var(--btn-border)",
+    background: "var(--btn-bg)",
+    color: "var(--btn-text)",
+    cursor: loading ? "default" : "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,.4)",
+    transition: "filter .15s ease, box-shadow .15s ease",
   };
 
   return (
     <>
       <PublicHeader />
-      <main style={pageBackgroundStyle}>
+
+      <main style={mainStyle}>
         <form onSubmit={onSubmit} style={cardStyle}>
           <h1
             style={{
@@ -200,17 +175,24 @@ export default function Login() {
               }}
               autoComplete="current-password"
             />
+
             <button
               type="button"
               onClick={() => setShowPass((s) => !s)}
               aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
               title={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
-              style={faceBtnStyle}
+              style={faceBtnBaseStyle}
               onMouseEnter={(e) => {
+                e.currentTarget.style.filter = "brightness(1.07)";
+                e.currentTarget.style.boxShadow =
+                  "0 2px 6px rgba(0,0,0,.5)";
                 e.currentTarget.style.background =
                   "color-mix(in srgb, var(--link) 8%, var(--panel))";
               }}
               onMouseLeave={(e) => {
+                e.currentTarget.style.filter = "";
+                e.currentTarget.style.boxShadow =
+                  "0 1px 4px rgba(0,0,0,.4)";
                 e.currentTarget.style.background = "var(--panel)";
               }}
             >
@@ -233,7 +215,23 @@ export default function Login() {
             </div>
           )}
 
-          <button type="submit" style={submitBtnStyle} disabled={loading}>
+          <button
+            type="submit"
+            style={submitBtnStyle}
+            disabled={loading}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.filter = "brightness(1.05)";
+                e.currentTarget.style.boxShadow =
+                  "0 3px 8px rgba(0,0,0,.55)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.filter = "";
+              e.currentTarget.style.boxShadow =
+                "0 2px 6px rgba(0,0,0,.4)";
+            }}
+          >
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>

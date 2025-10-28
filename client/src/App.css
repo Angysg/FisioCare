@@ -1,5 +1,7 @@
+/* =========================
+   Variables base (modo oscuro por defecto)
+   ========================= */
 :root {
-  /* Dark (por defecto) */
   --bg: #0f172a;
   --surface: #1c2840;
   --text: #e2e8f0;
@@ -29,11 +31,17 @@
   /* Page title */
   --title: #e5edff;
   --title-shadow: 0 2px 0 rgba(0, 0, 0, .25);
+
+  /* Dashboard cards dark */
+  --card-bd: rgba(255, 255, 255, .12);
+  --card-bd-strong: rgba(255, 255, 255, .24);
 }
 
-:root.light {
-  --bg: #e6f0ff;
-  /* celeste claro */
+/* =========================
+   Modo CLARO -> body.light
+   ========================= */
+body.light {
+  --bg: #e6f0ff;               /* celeste claro del fondo */
   --surface: #ffffff;
   --text: #0a0a0a;
   --muted: #475569;
@@ -41,8 +49,7 @@
   --link: #2563eb;
   --link-hover: #1d4ed8;
 
-  --panel: rgba(255, 255, 255, .65);
-  /* sin caja blanca sólida */
+  --panel: rgba(255, 255, 255, .65);    /* tarjetas traslúcidas */
   --panel-hover: rgba(255, 255, 255, .8);
 
   --card-bg: #ffffff;
@@ -58,7 +65,56 @@
 
   --title: #0b225a;
   --title-shadow: none;
+
+  /* dashboard cards claro */
+  --card-bd: rgba(15, 23, 42, .15);
+  --card-bd-strong: rgba(15, 23, 42, .30);
 }
+
+/* =========================
+   Modo OSCURO explícito -> body.dark
+   (redeclara para que al cambiar de light->dark vuelva todo bien)
+   ========================= */
+body.dark {
+  /* fondo general de la app */
+  --bg: #0f172a;              /* fondo de la página (casi negro azulado) */
+
+  /* barra superior / cards oscuras */
+  --surface: #1c2538;         /* este es el color que ya estás usando en el header y en la card del login */
+  --panel: #1c2538;           /* lista / paneles */
+  --panel-hover: #243045;
+
+  /* texto y detalles */
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #2a344d;
+
+  --link: #60a5fa;
+  --link-hover: #93c5fd;
+
+  /* tarjetas/dashboard/login card */
+  --card-bg: #1c2538;         /* caja de login y cajas del dashboard */
+  --card-shadow: 0 16px 40px rgba(0, 0, 0, .6);
+
+  /* inputs en oscuro */
+  --input-bg: #0f172a;
+  --input-text: #e2e8f0;
+
+  /* botones en oscuro */
+  --btn-bg: #2a3a55;
+  --btn-bg-hover: #324769;
+  --btn-text: #f9fafb;
+  --btn-border: rgba(255, 255, 255, .12);
+
+  /* título/dashboard */
+  --title: #e5edff;
+  --title-shadow: 0 2px 0 rgba(0, 0, 0, .75);
+
+  /* bordes tarjetas dashboard */
+  --card-bd: rgba(255, 255, 255, .12);
+  --card-bd-strong: rgba(255, 255, 255, .24);
+}
+
 
 /* =========================
    Base
@@ -67,7 +123,7 @@ html,
 body,
 #root {
   height: 100%;
-  margin: 0
+  margin: 0;
 }
 
 body {
@@ -77,7 +133,7 @@ body {
   transition: background-color .3s ease, color .3s ease;
 }
 
-/* Contenedor general: recupera márgenes y respiro */
+/* Contenedor general */
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -127,7 +183,7 @@ nav a.active {
 }
 
 /* =========================
-   Card simple (bienvenida u otros)
+   Card simple
    ========================= */
 .card {
   background: var(--card-bg);
@@ -137,7 +193,7 @@ nav a.active {
 }
 
 /* =========================
-   Formularios (labels arriba)
+   Formularios
    ========================= */
 .form-field {
   margin-bottom: .9rem;
@@ -191,7 +247,7 @@ textarea {
 }
 
 /* =========================
-   Botones (glass)
+   Botones
    ========================= */
 button {
   border: 1px solid var(--btn-border);
@@ -213,7 +269,7 @@ button:hover {
 
 button[disabled] {
   opacity: .6;
-  cursor: not-allowed
+  cursor: not-allowed;
 }
 
 /* =========================
@@ -247,7 +303,7 @@ button[disabled] {
 }
 
 /* =========================
-   Home (tarjetas de navegación)
+   Home (tarjetas navegación)
    ========================= */
 .grid {
   display: grid;
@@ -348,7 +404,7 @@ button[disabled] {
   margin-top: 12px;
 }
 
-/* Evita que los enlaces del dashboard cambien el color visitado */
+/* Enlaces del dashboard */
 .card-link,
 .card-link:visited {
   color: inherit;
@@ -381,23 +437,9 @@ button[disabled] {
   margin-top: .35rem;
 }
 
-/* Variables específicas para las tarjetas del dashboard */
-body.light {
-  --card-bg: #ffffff;
-  /* tarjetas claras y limpias */
-  --card-bd: rgba(15, 23, 42, .15);
-  --card-bd-strong: rgba(15, 23, 42, .30);
-}
-
-body.dark {
-  --card-bg: #151c2b;
-  /* como el listado de pacientes */
-  --card-bd: rgba(255, 255, 255, .12);
-  --card-bd-strong: rgba(255, 255, 255, .24);
-}
-
-
-/* Vacaciones: espacios equilibrados */
+/* =========================
+   Vacaciones
+   ========================= */
 .vacaciones-page .form-card {
   margin-bottom: 12px !important;
 }
@@ -411,7 +453,7 @@ body.dark {
   margin-top: 16px !important;
 }
 
-/* Botón del filtro: separado del select SOLO en móvil */
+/* Botón del filtro */
 .vacaciones-page .only-mine-btn {
   margin-top: 8px;
 }
@@ -420,8 +462,6 @@ body.dark {
   .vacaciones-page .only-mine-btn {
     margin-top: 0;
   }
-
-  /* ya va en la misma fila */
 }
 
 /* Calendario (react-big-calendar) compacto */
@@ -435,7 +475,7 @@ body.dark {
   margin-right: 4px;
 }
 
-/* Botón del filtro: separado del select SOLO en móvil; en desktop no se estira */
+/* Repetido arriba, pero para móvil vs desktop */
 .vacaciones-page .only-mine-btn {
   margin-top: 8px;
 }
@@ -446,32 +486,33 @@ body.dark {
   }
 }
 
-/* Un pelín más de aire bajo el grid del form para el botón Guardar */
+/* Aire bajo el form */
 .vacaciones-page .vac-form .actions {
   margin-top: 16px;
 }
 
-/* Grid fija para el bloque de filtro: 1fr + auto en desktop */
-.vacaciones-page .filter-grid{
+/* Grid filtro vacaciones */
+.vacaciones-page .filter-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
 }
-@media (min-width: 768px){
-  .vacaciones-page .filter-grid{
-    grid-template-columns: 1fr auto;  /* botón tamaño contenido */
+
+@media (min-width: 768px) {
+  .vacaciones-page .filter-grid {
+    grid-template-columns: 1fr auto;
     align-items: end;
   }
 }
 
-/* El botón no se estira y queda compacto */
-.vacaciones-page .only-mine-btn{
+.vacaciones-page .only-mine-btn {
   display: inline-block;
   width: auto;
-  margin-top: 8px;        /* separación en móvil */
+  margin-top: 8px;
 }
-@media (min-width: 768px){
-  .vacaciones-page .only-mine-btn{
-    margin-top: 0;        /* misma línea que el select */
+
+@media (min-width: 768px) {
+  .vacaciones-page .only-mine-btn {
+    margin-top: 0;
   }
 }
