@@ -118,5 +118,33 @@ export async function apiListFisioterapeutasSimple() {
   }));
 }
 
+// ===================== VACATION REQUESTS (solicitudes) =====================
+const VAC_REQ_BASE = '/api/vacation-requests';
+
+// Fisio crea solicitud
+export async function apiCreateVacationRequest({ startDate, endDate, message }) {
+  const { data } = await api.post(VAC_REQ_BASE, { startDate, endDate, message });
+  return data;
+}
+
+// Fisio ve sus solicitudes
+export async function apiListMyVacationRequests() {
+  const { data } = await api.get(`${VAC_REQ_BASE}/mine`);
+  return data?.data || [];
+}
+
+// Admin ve pendientes
+export async function apiListPendingVacationRequests() {
+  const { data } = await api.get(`${VAC_REQ_BASE}/pending`);
+  return data?.data || [];
+}
+
+// Admin resuelve (approve / reject)
+export async function apiResolveVacationRequest(id, action) {
+  const { data } = await api.post(`${VAC_REQ_BASE}/${id}/resolve`, { action });
+  return data;
+}
+
+
 
 export default api;
