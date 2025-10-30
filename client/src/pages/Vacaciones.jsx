@@ -225,7 +225,8 @@ export default function Vacaciones() {
       <h1 className="page-title">VACACIONES</h1>
 
       {/* Bloque superior en dos columnas (md+) */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid md:grid-cols-2 gap-8 md:gap-10">
+
         {/* ==== ADMIN: Bandeja de solicitudes pendientes ==== */}
         {isAdmin && (
           <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 space-y-4">
@@ -270,18 +271,20 @@ export default function Vacaciones() {
                         {r.message || "—"}
                       </td>
                       <td style={{ padding: "6px 4px", whiteSpace: "nowrap" }}>
-                        <button
-                          className="mr-2 px-2 py-1 rounded border text-xs"
-                          onClick={() => resolveRequest(r._id, "approve")}
-                        >
-                          Aprobar
-                        </button>
-                        <button
-                          className="px-2 py-1 rounded border text-xs"
-                          onClick={() => resolveRequest(r._id, "reject")}
-                        >
-                          Rechazar
-                        </button>
+                        <div className="table-actions">
+                          <button
+                            className="btn-soft"
+                            onClick={() => resolveRequest(r._id, "approve")}
+                          >
+                            Aceptar
+                          </button>
+                          <button
+                            className="btn-soft btn-soft--danger"
+                            onClick={() => resolveRequest(r._id, "reject")}
+                          >
+                            Rechazar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -293,19 +296,74 @@ export default function Vacaciones() {
 
         {/* ==== ADMIN: Añadir vacaciones ==== */}
         {isAdmin && (
-          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
+          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 mb-6">
             <h2 className="sec-title sec-title--big">Añadir vacaciones</h2>
-            <VacationForm
-              role={"admin"}
-              fisios={fisios}
-              onCreated={() => setReloadKey((x) => x + 1)}
-            />
+            {/* wrapper para poder espaciar el botón submit sin tocar el componente */}
+            <div className="vac-form">
+              <VacationForm
+                role={"admin"}
+                fisios={fisios}
+                onCreated={() => setReloadKey((x) => x + 1)}
+              />
+            </div>
           </section>
         )}
 
-        {/* ==== FISIO: Formulario para solicitar + Mis solicitudes ==== */}
+        {/* ==== FISIO: Mis solicitudes (izquierda) ==== */}
         {isFisio && (
-          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 space-y-4">
+          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
+            <h2 className="sec-title sec-title--big">Mis solicitudes</h2>
+            {(!myRequests || myRequests.length === 0) ? (
+              <p className="text-[var(--muted)] text-sm">
+                Aún no has solicitado vacaciones.
+              </p>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  fontSize: 14,
+                  borderCollapse: "collapse",
+                }}
+              >
+                <thead>
+                  <tr style={{ textAlign: "left", color: "var(--muted)" }}>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>Comentario</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...myRequests]
+                    .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+                    .map((r) => {
+                      const { label, cls } = statusInfo(r.status || r.estado);
+                      return (
+                        <tr key={r._id} style={{ borderTop: "1px solid var(--border)" }}>
+                          <td style={{ padding: "6px 4px" }}>
+                            {new Date(r.startDate).toLocaleDateString()}
+                          </td>
+                          <td style={{ padding: "6px 4px" }}>
+                            {new Date(r.endDate).toLocaleDateString()}
+                          </td>
+                          <td style={{ padding: "6px 4px", maxWidth: 240 }}>
+                            {r.message || "—"}
+                          </td>
+                          <td style={{ padding: "6px 4px" }}>
+                            <span className={cls}>{label}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            )}
+          </section>
+        )}
+
+        {/* ==== FISIO: Solicitar vacaciones (derecha) ==== */}
+        {isFisio && (
+          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
             <h2 className="sec-title sec-title--big">Solicitar vacaciones</h2>
 
             <form
@@ -313,6 +371,7 @@ export default function Vacaciones() {
               className="grid gap-4 md:grid-cols-4"
               style={{ fontSize: 14 }}
             >
+              {/* Inicio */}
               <div className="flex flex-col">
                 <label className="text-[var(--muted)] text-sm mb-1">Inicio</label>
                 <input
@@ -324,6 +383,7 @@ export default function Vacaciones() {
                 />
               </div>
 
+              {/* Fin */}
               <div className="flex flex-col">
                 <label className="text-[var(--muted)] text-sm mb-1">Fin</label>
                 <input
@@ -335,7 +395,8 @@ export default function Vacaciones() {
                 />
               </div>
 
-              <div className="flex flex-col md:col-span-2">
+              {/* Comentario (una columna en md+ para que quede sitio al botón) */}
+              <div className="flex flex-col">
                 <label className="text-[var(--muted)] text-sm mb-1">
                   Comentario (opcional)
                 </label>
@@ -348,76 +409,32 @@ export default function Vacaciones() {
                 />
               </div>
 
-              <div className="md:col-span-4">
-                {errReq && <p className="text-red-500 text-sm mb-2">{errReq}</p>}
+              {/* Botón alineado con los inputs */}
+              <div className="flex flex-col">
+                {/* Espaciador fijo igual al alto de los labels */}
+                <div className="mb-1" style={{ height: "20px" }}></div>
                 <button
                   type="submit"
                   disabled={savingReq}
-                  className="px-4 py-2 rounded-xl border hover:bg-[var(--panel-hover)]"
+                  className="h-[42px] px-4 rounded-xl border hover:bg-[var(--panel-hover)]"
                 >
                   {savingReq ? "Enviando..." : "Enviar solicitud"}
                 </button>
               </div>
-            </form>
 
-            {/* ==== Mis solicitudes (SIEMPRE visible para fisio) ==== */}
-            <div className="rounded-xl border bg-[var(--panel)] p-4">
-              <h3 className="font-semibold text-[var(--text)] text-base mb-3">
-                Mis solicitudes
-              </h3>
-              {(!myRequests || myRequests.length === 0) ? (
-                <p className="text-[var(--muted)] text-sm">
-                  Aún no has solicitado vacaciones.
-                </p>
-              ) : (
-                <table
-                  style={{
-                    width: "100%",
-                    fontSize: 14,
-                    borderCollapse: "collapse",
-                  }}
-                >
-                  <thead>
-                    <tr style={{ textAlign: "left", color: "var(--muted)" }}>
-                      <th>Inicio</th>
-                      <th>Fin</th>
-                      <th>Comentario</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...myRequests]
-                      .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
-                      .map((r) => {
-                        const { label, cls } = statusInfo(r.status || r.estado);
-                        return (
-                          <tr key={r._id} style={{ borderTop: "1px solid var(--border)" }}>
-                            <td style={{ padding: "6px 4px" }}>
-                              {new Date(r.startDate).toLocaleDateString()}
-                            </td>
-                            <td style={{ padding: "6px 4px" }}>
-                              {new Date(r.endDate).toLocaleDateString()}
-                            </td>
-                            <td style={{ padding: "6px 4px", maxWidth: 240 }}>
-                              {r.message || "—"}
-                            </td>
-                            <td style={{ padding: "6px 4px" }}>
-                              <span className={cls}>{label}</span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-              )}
-            </div>
+
+
+
+            </form>
           </section>
         )}
+
       </div>
 
       {/* ==== FILTRAR (admin, ancho completo) ==== */}
       {isAdmin && (
-        <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
+        <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 mb-6">
+
           <h2 className="sec-title sec-title--big">Filtrar</h2>
           <div>
             <label className="block text-sm text-[var(--muted)] mb-1">
@@ -440,7 +457,8 @@ export default function Vacaciones() {
       )}
 
       {/* Calendario */}
-      <div className="calendar-block mt-2">
+      <div className="calendar-block mt-8">
+
         {errorVac && <p className="text-red-500">{errorVac}</p>}
         {loadingVac ? (
           <div className="rounded-2xl p-6 border bg-[var(--panel)] text-[var(--muted)]">

@@ -7,7 +7,6 @@ import {
   apiDeleteFisio,
   apiCreateFisioAccess,
 } from "../api";
-import { logout, getUser } from "../auth";
 
 /* ===== Botón suave reutilizable ===== */
 function AdjButton({ children, onClick, variant = "action", disabled = false, title }) {
@@ -173,12 +172,6 @@ function FisioRow({ fisio, isOpen, onToggle, onEdit, onDelete, deleting }) {
 /* ===== Página ===== */
 export default function FisioterapeutasPage() {
   const navigate = useNavigate();
-  const user = getUser();
-
-  function salir() {
-    logout();
-    navigate("/login");
-  }
 
   const [q, setQ] = useState("");
   const [sort, setSort] = useState("alpha");
@@ -225,7 +218,6 @@ export default function FisioterapeutasPage() {
       email: form.email,
       telefono: form.telefono,
       especialidades: form.especialidades,
-      // ya NO mandamos createAccess/password al backend de fisios
     };
 
     const nuevo = await apiCreateFisio(payload);
@@ -271,14 +263,8 @@ export default function FisioterapeutasPage() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <div className="page-header">
-        <h1 className="page-title">FISIOTERAPEUTAS</h1>
-        <div className="page-header__actions">
-          <span className="page-header__user">{user?.name} ({user?.role})</span>
-          <button onClick={salir}>Salir</button>
-        </div>
-      </div>
+    <main className="container" style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
+      <h1 className="page-title">FISIOTERAPEUTAS</h1>
 
       <form
         onSubmit={buscar}
@@ -397,6 +383,6 @@ export default function FisioterapeutasPage() {
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

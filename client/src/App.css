@@ -371,3 +371,55 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
   color: #7f1d1d;
   border-color: color-mix(in srgb, #ef4444 50%, transparent);
 }
+
+/* ===== Botón suave (mismo estilo que "Editar / Eliminar" de Pacientes) ===== */
+.btn-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1;
+  user-select: none;
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--link) 45%, transparent);
+  background: color-mix(in srgb, var(--link) 6%, transparent);
+  color: var(--link);
+  transition: background .25s, box-shadow .25s;
+}
+.btn-soft:hover {
+  background: color-mix(in srgb, var(--link) 15%, transparent);
+}
+.btn-soft:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent);
+}
+
+/* Variante peligro (como "Eliminar") */
+.btn-soft--danger {
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.35);
+  background: rgba(185, 28, 28, 0.05);
+}
+.btn-soft--danger:hover {
+  background: rgba(185, 28, 28, 0.12);
+}
+.btn-soft--danger:focus-visible {
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.25);
+}
+
+/* Acciones en celdas de tabla: separa botones */
+.table-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+/* Margen superior del botón submit dentro del wrapper del formulario de admin */
+.vac-form button[type="submit"] {
+  margin-top: 10px;
+}
+
+
+.vacaciones-page .calendar-block { margin-top: 28px !important; }
