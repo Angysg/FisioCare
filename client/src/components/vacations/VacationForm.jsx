@@ -1,44 +1,28 @@
 import { useEffect, useState } from "react";
-import { apiCreateVacation, apiListFisioterapeutasSimple } from "../../api";
+import { apiCreateVacation } from "../../api";
 
-export default function VacationForm({ onCreated, role }) {
+export default function VacationForm({ onCreated, role, fisios = [] }) {
   const isAdmin = (role || "").toLowerCase() === "admin";
-
-  // si no es admin, no mostramos el formulario
-  if (!isAdmin) {
-    return null;
-  }
+  if (!isAdmin) return null;
 
   const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate]     = useState("");
-  const [notes, setNotes]         = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [notes, setNotes] = useState("");
 
-  const [fisioId, setFisioId]     = useState("");
-  const [fisios, setFisios]       = useState([]);
+  const [fisioId, setFisioId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
-
+  // cuando llegan/actualizan los fisios, preselecciona el primero
   useEffect(() => {
-    (async () => {
-      try {
-        const list = await apiListFisioterapeutasSimple();
-        setFisios(list || []);
-        if (list && list.length && !fisioId) {
-          setFisioId(list[0]._id);
-        }
-      } catch (err) {
-        console.error("No se pudieron cargar fisios para el formulario", err);
-      }
-    })();
-  }, [fisioId]);
+    if (!fisioId && fisios?.length) setFisioId(fisios[0]._id);
+  }, [fisios, fisioId]);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!isAdmin) return; // seguridad extra front
+    if (!isAdmin) return;
 
     setError("");
-
     if (!startDate || !endDate || !fisioId) {
       setError("Selecciona fisio e introduce fechas de inicio y fin");
       return;
@@ -46,22 +30,11 @@ export default function VacationForm({ onCreated, role }) {
 
     setLoading(true);
     try {
-      const payload = {
-        startDate,
-        endDate,
-        notes,
-        fisioId,
-      };
-
-      await apiCreateVacation(payload);
-
+      await apiCreateVacation({ startDate, endDate, notes, fisioId });
       setStartDate("");
       setEndDate("");
       setNotes("");
-      if (fisios.length) {
-        setFisioId(fisios[0]._id || "");
-      }
-
+      if (fisios?.length) setFisioId(fisios[0]._id || "");
       onCreated?.();
     } catch (err) {
       setError(err?.message || "Error al crear vacaciones");
@@ -71,14 +44,7 @@ export default function VacationForm({ onCreated, role }) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mb-10 rounded-2xl p-5 md:p-6 border bg-[var(--panel)]"
-    >
-      <h3 className="text-lg font-semibold mb-3">
-        Añadir vacaciones
-      </h3>
-
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5">
         <div className="md:col-span-1">
           <label className="block text-sm text-[var(--muted)] mb-1">
@@ -88,9 +54,9 @@ export default function VacationForm({ onCreated, role }) {
             className="w-full rounded-md border px-3 py-2 bg-white text-black"
             value={fisioId}
             onChange={(e) => setFisioId(e.target.value)}
-            disabled={loading}
+            disabled={loading || !(fisios?.length)}
           >
-            {fisios.map((f) => (
+            {(fisios || []).map((f) => (
               <option key={f._id} value={f._id}>
                 {f.nombre} {f.apellidos}
               </option>
@@ -99,9 +65,7 @@ export default function VacationForm({ onCreated, role }) {
         </div>
 
         <div className="md:col-span-1">
-          <label className="block text-sm text-[var(--muted)] mb-1">
-            Inicio
-          </label>
+          <label className="block text-sm text-[var(--muted)] mb-1">Inicio</label>
           <input
             type="date"
             className="w-full rounded-md border px-3 py-2 bg-white text-black"
@@ -112,9 +76,7 @@ export default function VacationForm({ onCreated, role }) {
         </div>
 
         <div className="md:col-span-1">
-          <label className="block text-sm text-[var(--muted)] mb-1">
-            Fin
-          </label>
+          <label className="block text-sm text-[var(--muted)] mb-1">Fin</label>
           <input
             type="date"
             className="w-full rounded-md border px-3 py-2 bg-white text-black"
@@ -139,11 +101,9 @@ export default function VacationForm({ onCreated, role }) {
         </div>
       </div>
 
-      {error && (
-        <p className="text-sm text-red-500 mt-2">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
 
-      <div className="mt-4">
+      <div>
         <button
           disabled={loading}
           className="px-4 py-2 rounded-md bg-[rgb(69,108,241)] text-white font-medium shadow hover:opacity-90 disabled:opacity-50"

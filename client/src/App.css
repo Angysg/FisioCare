@@ -73,18 +73,13 @@ body.light {
 
 /* =========================
    Modo OSCURO explícito -> body.dark
-   (redeclara para que al cambiar de light->dark vuelva todo bien)
    ========================= */
 body.dark {
-  /* fondo general de la app */
-  --bg: #0f172a;              /* fondo de la página (casi negro azulado) */
-
-  /* barra superior / cards oscuras */
-  --surface: #1c2538;         /* este es el color que ya estás usando en el header y en la card del login */
-  --panel: #1c2538;           /* lista / paneles */
+  --bg: #0f172a;
+  --surface: #1c2538;
+  --panel: #1c2538;
   --panel-hover: #243045;
 
-  /* texto y detalles */
   --text: #e2e8f0;
   --muted: #94a3b8;
   --border: #2a344d;
@@ -92,36 +87,28 @@ body.dark {
   --link: #60a5fa;
   --link-hover: #93c5fd;
 
-  /* tarjetas/dashboard/login card */
-  --card-bg: #1c2538;         /* caja de login y cajas del dashboard */
+  --card-bg: #1c2538;
   --card-shadow: 0 16px 40px rgba(0, 0, 0, .6);
 
-  /* inputs en oscuro */
   --input-bg: #0f172a;
   --input-text: #e2e8f0;
 
-  /* botones en oscuro */
   --btn-bg: #2a3a55;
   --btn-bg-hover: #324769;
   --btn-text: #f9fafb;
   --btn-border: rgba(255, 255, 255, .12);
 
-  /* título/dashboard */
   --title: #e5edff;
   --title-shadow: 0 2px 0 rgba(0, 0, 0, .75);
 
-  /* bordes tarjetas dashboard */
   --card-bd: rgba(255, 255, 255, .12);
   --card-bd-strong: rgba(255, 255, 255, .24);
 }
 
-
 /* =========================
    Base
    ========================= */
-html,
-body,
-#root {
+html, body, #root {
   height: 100%;
   margin: 0;
 }
@@ -158,28 +145,35 @@ nav a {
   border-radius: 8px;
   border: 1px solid transparent;
 }
-
-nav a:hover {
-  color: var(--link-hover);
-  text-decoration: underline;
-}
-
-/* Estado activo para NavLink */
+nav a:hover { color: var(--link-hover); text-decoration: underline; }
 nav a.active {
   background: color-mix(in srgb, var(--link) 12%, transparent);
   border-color: var(--border);
 }
 
 /* =========================
-   Título de página
+   Títulos
    ========================= */
 .page-title {
+  margin: 1.5rem 0 1rem;
   font-size: 2rem;
   letter-spacing: .02em;
   font-weight: 800;
   color: var(--title);
   text-shadow: var(--title-shadow);
-  margin: 1.5rem 0 1rem;
+}
+
+.sec-title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 .75rem 0;
+}
+
+/* Variante un poco más grande para títulos de sección */
+.sec-title--big {
+  font-size: 1.25rem;   /* ~20px */
+  line-height: 1.35;
 }
 
 /* =========================
@@ -195,9 +189,7 @@ nav a.active {
 /* =========================
    Formularios
    ========================= */
-.form-field {
-  margin-bottom: .9rem;
-}
+.form-field { margin-bottom: .9rem; }
 
 label {
   display: block;
@@ -206,19 +198,14 @@ label {
   color: var(--text);
 }
 
-input,
-select,
-textarea,
-button {
+input, select, textarea, button {
   font: inherit;
   border-radius: 8px;
   border: 1px solid var(--border);
   box-sizing: border-box;
 }
 
-input,
-select,
-textarea {
+input, select, textarea {
   color: var(--input-text);
   background: var(--input-bg);
   padding: 10px 12px;
@@ -226,25 +213,15 @@ textarea {
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: var(--muted);
-  opacity: .9;
-}
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .9; }
 
-input:focus,
-select:focus,
-textarea:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: rgba(59, 130, 246, .45);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+  border-color: rgba(59,130,246,.45);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
 }
 
-textarea {
-  min-height: 110px;
-  resize: vertical;
-  line-height: 1.4;
-}
+textarea { min-height: 110px; resize: vertical; line-height: 1.4; }
 
 /* =========================
    Botones
@@ -259,27 +236,15 @@ button {
   transition: transform .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
 }
-
-button:hover {
-  background: var(--btn-bg-hover);
-  transform: scale(1.03);
-}
-
-button[disabled] {
-  opacity: .6;
-  cursor: not-allowed;
-}
+button:hover { background: var(--btn-bg-hover); transform: scale(1.03); }
+button[disabled] { opacity: .6; cursor: not-allowed; }
 
 /* =========================
    Listas (pacientes)
    ========================= */
-.list {
-  display: grid;
-  gap: .75rem;
-}
-
+.list { display: grid; gap: .75rem; }
 .list-item {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -287,20 +252,9 @@ button[disabled] {
   padding: .75rem .9rem;
   transition: background .2s ease, border-color .2s ease, transform .1s ease;
 }
-
-.list-item:hover {
-  background: var(--panel-hover);
-  transform: translateY(-1px);
-}
-
-.list-item .name {
-  font-weight: 700;
-}
-
-.list-item .meta {
-  color: var(--muted);
-  font-size: .95rem;
-}
+.list-item:hover { background: var(--panel-hover); transform: translateY(-1px); }
+.list-item .name { font-weight: 700; }
+.list-item .meta { color: var(--muted); font-size: .95rem; }
 
 /* =========================
    Home (tarjetas navegación)
@@ -310,7 +264,6 @@ button[disabled] {
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
-
 .nav-card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -319,200 +272,102 @@ button[disabled] {
   text-align: center;
   transition: background .2s ease, transform .12s ease, box-shadow .2s ease;
 }
-
-.nav-card:hover {
-  background: var(--panel-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
-}
-
-.nav-card h3 {
-  margin: .5rem 0;
-}
+.nav-card:hover { background: var(--panel-hover); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.nav-card h3 { margin: .5rem 0; }
 
 /* ====== LISTADO PACIENTES ====== */
-#listaPacientes {
-  display: grid;
-  gap: 12px;
-}
-
+#listaPacientes { display: grid; gap: 12px; }
 #listaPacientes .pac-item {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
   transition: background .2s ease, border-color .2s ease, transform .1s ease;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
 }
+#listaPacientes .pac-item:hover { background: var(--panel-hover); transform: translateY(-1px); }
+#listaPacientes .pac-item .name { font-weight: 700; line-height: 1.25; margin-bottom: 2px; color: var(--text); }
+#listaPacientes .pac-item .meta { font-size: .95rem; color: color-mix(in oklab, var(--text) 72%, transparent); }
 
-#listaPacientes .pac-item:hover {
-  background: var(--panel-hover);
-  transform: translateY(-1px);
-}
-
-#listaPacientes .pac-item .name {
-  font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 2px;
-  color: var(--text);
-}
-
-#listaPacientes .pac-item .meta {
-  font-size: .95rem;
-  color: color-mix(in oklab, var(--text) 72%, transparent);
-}
-
-/* Cabecera local de página */
+/* =========================
+   Cabeceras locales
+   ========================= */
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0 0 12px 0;
-  background: transparent !important;
-  border: 0 !important;
-  padding: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 0 0 12px 0; background: transparent !important; border: 0 !important; padding: 0;
 }
+.page-header__actions { display: flex; gap: 8px; align-items: center; }
+.page-header__user { color: var(--muted); }
 
-.page-header__actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.page-header__user {
-  color: var(--muted);
-}
-
-/* Título de página */
-.page-title {
-  margin: 0;
-  font-size: 2rem;
-  letter-spacing: .02em;
-  font-weight: 800;
-  color: var(--title);
-  text-shadow: var(--title-shadow);
-  background: transparent;
-  display: inline-block;
-}
-
-/* --------- Dashboard como lista vertical ---------- */
-.dashboard-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-top: 12px;
-}
-
-/* Enlaces del dashboard */
-.card-link,
-.card-link:visited {
-  color: inherit;
-}
-
+/* --------- Dashboard vertical ---------- */
+.dashboard-list { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 12px; }
+.card-link, .card-link:visited { color: inherit; }
 .card-link {
-  display: block;
-  padding: 16px 18px;
-  border-radius: 14px;
-  border: 1px solid var(--card-bd, var(--border));
-  background: var(--card-bg);
-  text-decoration: none;
-  transition: box-shadow .15s ease, transform .05s ease, border-color .15s ease;
+  display: block; padding: 16px 18px; border-radius: 14px;
+  border: 1px solid var(--card-bd, var(--border)); background: var(--card-bg);
+  text-decoration: none; transition: box-shadow .15s ease, transform .05s ease, border-color .15s ease;
 }
-
-.card-link:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .10);
-  border-color: var(--card-bd-strong, var(--border));
-}
-
-.card-link h2,
-.card-link p {
-  margin: 0;
-  color: var(--text);
-}
-
-.card-link p {
-  color: var(--muted);
-  margin-top: .35rem;
-}
+.card-link:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.10); border-color: var(--card-bd-strong, var(--border)); }
+.card-link h2, .card-link p { margin: 0; color: var(--text); }
+.card-link p { color: var(--muted); margin-top: .35rem; }
 
 /* =========================
    Vacaciones
    ========================= */
-.vacaciones-page .form-card {
-  margin-bottom: 12px !important;
-}
+.vacaciones-page .form-card { margin-bottom: 12px !important; }
+.vacaciones-page .filter-card { margin-top: 10px !important; margin-bottom: 12px !important; }
+.vacaciones-page .calendar-block { margin-top: 16px !important; }
 
-.vacaciones-page .filter-card {
-  margin-top: 10px !important;
-  margin-bottom: 12px !important;
-}
-
-.vacaciones-page .calendar-block {
-  margin-top: 16px !important;
-}
-
-/* Botón del filtro */
-.vacaciones-page .only-mine-btn {
-  margin-top: 8px;
-}
-
+/* Botón del filtro mobile spacing (si lo usas) */
+.vacaciones-page .only-mine-btn { margin-top: 8px; }
 @media (min-width: 768px) {
-  .vacaciones-page .only-mine-btn {
-    margin-top: 0;
-  }
+  .vacaciones-page .only-mine-btn { margin-top: 0; }
 }
 
 /* Calendario (react-big-calendar) compacto */
 .vacaciones-page .vac-calendar .rbc-toolbar {
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 10px !important;
+  gap: 6px; flex-wrap: wrap; margin-bottom: 10px !important;
 }
+.vacaciones-page .vac-calendar .rbc-toolbar .rbc-btn-group button { margin-right: 4px; }
 
-.vacaciones-page .vac-calendar .rbc-toolbar .rbc-btn-group button {
-  margin-right: 4px;
-}
+/* (dedupe) – evita reglas repetidas */
+.vacaciones-page .vac-form .actions { margin-top: 16px; }
 
-/* Repetido arriba, pero para móvil vs desktop */
-.vacaciones-page .only-mine-btn {
-  margin-top: 8px;
-}
-
-@media (min-width: 768px) {
-  .vacaciones-page .only-mine-btn {
-    margin-top: 0;
-  }
-}
-
-/* Aire bajo el form */
-.vacaciones-page .vac-form .actions {
-  margin-top: 16px;
-}
-
-/* Grid filtro vacaciones */
+/* Grid filtro vacaciones (por si se usa en otras vistas) */
 .vacaciones-page .filter-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  display: grid; grid-template-columns: 1fr; gap: 12px;
 }
-
 @media (min-width: 768px) {
-  .vacaciones-page .filter-grid {
-    grid-template-columns: 1fr auto;
-    align-items: end;
-  }
+  .vacaciones-page .filter-grid { grid-template-columns: 1fr auto; align-items: end; }
 }
 
-.vacaciones-page .only-mine-btn {
+
+/* Oculta cualquier etiqueta suelta (p/span/div) entre el h2 y el calendario en esta vista */
+.vacaciones-page .vac-calendar > h2 + :not(.rbc-calendar) {
+  display: none !important;
+}
+
+/* Badges de estado solicitudes (Pendiente / Aprobada / Rechazada) */
+.badge {
   display: inline-block;
-  width: auto;
-  margin-top: 8px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid var(--border);
 }
-
-@media (min-width: 768px) {
-  .vacaciones-page .only-mine-btn {
-    margin-top: 0;
-  }
+.badge--pending {
+  background: color-mix(in srgb, #fbbf24 20%, transparent);
+  color: #92400e;
+  border-color: color-mix(in srgb, #f59e0b 50%, transparent);
+}
+.badge--approved {
+  background: color-mix(in srgb, #34d399 22%, transparent);
+  color: #065f46;
+  border-color: color-mix(in srgb, #10b981 50%, transparent);
+}
+.badge--rejected {
+  background: color-mix(in srgb, #f87171 20%, transparent);
+  color: #7f1d1d;
+  border-color: color-mix(in srgb, #ef4444 50%, transparent);
 }

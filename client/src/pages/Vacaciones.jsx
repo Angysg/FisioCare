@@ -52,23 +52,20 @@ function normalizeArray(arr) {
 }
 
 export default function Vacaciones() {
-  // Info usuario logado
   const me = getUser(); // {id,name,email,role}
   const role = (me?.role || "").toLowerCase();
   const isAdmin = role === "admin";
   const isFisio = role === "fisioterapeuta";
 
-  // estado común
   const [reloadKey, setReloadKey] = useState(0);
   const [items, setItems] = useState([]); // vacaciones aprobadas
   const [fisios, setFisios] = useState([]); // lista fisios (solo usará admin)
   const [loadingVac, setLoadingVac] = useState(true);
   const [errorVac, setErrorVac] = useState("");
 
-  // filtro solo visible para admin
   const [selectedFisioId, setSelectedFisioId] = useState("ALL");
 
-  // ---- solicitudes (nuevo)
+  // ---- solicitudes
   const [myRequests, setMyRequests] = useState([]); // para fisio
   const [pendingRequests, setPendingRequests] = useState([]); // para admin
   const [reqStart, setReqStart] = useState("");
@@ -77,7 +74,7 @@ export default function Vacaciones() {
   const [savingReq, setSavingReq] = useState(false);
   const [errReq, setErrReq] = useState("");
 
-  // 1. cargar vacaciones aprobadas
+  // 1) vacaciones aprobadas
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -98,7 +95,7 @@ export default function Vacaciones() {
     return () => { mounted = false; };
   }, [reloadKey]);
 
-  // 2. cargar fisios (solo tiene sentido para admin, que puede crear vacaciones directas)
+  // 2) fisios (solo admin)
   useEffect(() => {
     if (!isAdmin) return;
     let mounted = true;
@@ -107,24 +104,23 @@ export default function Vacaciones() {
         const raw = await apiListFisioterapeutasSimple();
         if (!mounted) return;
         const norm = normalizeFisios(raw);
-        if (norm.length > 0) {
-          setFisios(norm);
-        }
+        setFisios(norm || []);
       } catch (e) {
         console.warn("No se pudieron cargar fisios:", e);
+        if (mounted) setFisios([]);
       }
     })();
     return () => { mounted = false; };
   }, [isAdmin]);
 
-  // 3. cargar mis solicitudes (si soy fisio)
+  // 3) mis solicitudes (fisio)
   useEffect(() => {
     if (!isFisio) return;
     let mounted = true;
     (async () => {
       try {
         const list = await apiListMyVacationRequests();
-        if (mounted) setMyRequests(list);
+        if (mounted) setMyRequests(list || []);
       } catch (e) {
         console.warn("No se pudieron cargar tus solicitudes:", e);
       }
@@ -132,14 +128,14 @@ export default function Vacaciones() {
     return () => { mounted = false; };
   }, [isFisio, reloadKey]);
 
-  // 4. cargar solicitudes pendientes (si soy admin)
+  // 4) solicitudes pendientes (admin)
   useEffect(() => {
     if (!isAdmin) return;
     let mounted = true;
     (async () => {
       try {
         const list = await apiListPendingVacationRequests();
-        if (mounted) setPendingRequests(list);
+        if (mounted) setPendingRequests(list || []);
       } catch (e) {
         console.warn("No se pudieron cargar las solicitudes pendientes:", e);
       }
@@ -147,7 +143,7 @@ export default function Vacaciones() {
     return () => { mounted = false; };
   }, [isAdmin, reloadKey]);
 
-  // preparar eventos calendario
+  // eventos calendario (título = nombre del fisio)
   const events = useMemo(() => {
     return (items || []).map((v) => {
       const fisioName = v?.fisio?.nombre
@@ -156,7 +152,7 @@ export default function Vacaciones() {
 
       return {
         id: v?._id,
-        title: v?.title || "Vacaciones",
+        title: fisioName || v?.title || "Vacaciones",
         start: v?.startDate,
         end: v?.endDate,
         fisioId: v?.fisio?._id || v?.fisio || v?.fisioId,
@@ -166,19 +162,14 @@ export default function Vacaciones() {
     });
   }, [items]);
 
-  // filtro calendario (solo si admin usa dropdown)
+  // filtro calendario (solo admin)
   const filteredEvents = useMemo(() => {
-    if (!isAdmin) {
-      // el fisio ya recibe backend filtrado, así que no filtramos más
-      return events;
-    }
+    if (!isAdmin) return events;
     if (selectedFisioId === "ALL") return events;
-    return events.filter(
-      (e) => (e.fisioId || "").toString() === selectedFisioId
-    );
+    return events.filter((e) => (e.fisioId || "").toString() === selectedFisioId);
   }, [events, isAdmin, selectedFisioId]);
 
-  // enviar solicitud de vacaciones (fisio)
+  // enviar solicitud (fisio)
   async function submitRequest(e) {
     e.preventDefault();
     setSavingReq(true);
@@ -194,11 +185,9 @@ export default function Vacaciones() {
         endDate: reqEnd,
         message: reqMsg,
       });
-      // limpio formulario
       setReqStart("");
       setReqEnd("");
       setReqMsg("");
-      // recargo
       setReloadKey((x) => x + 1);
     } catch (err) {
       console.error(err);
@@ -212,7 +201,6 @@ export default function Vacaciones() {
   async function resolveRequest(id, action) {
     try {
       await apiResolveVacationRequest(id, action);
-      // recargar todo
       setReloadKey((x) => x + 1);
     } catch (err) {
       console.error(err);
@@ -220,166 +208,32 @@ export default function Vacaciones() {
     }
   }
 
+  // helper estado -> etiqueta y clase
+  function statusInfo(sraw) {
+    const s = (sraw || "").toString().toLowerCase();
+    if (s === "approved" || s === "aceptado" || s === "aprobada") {
+      return { label: "Aprobada", cls: "badge badge--approved" };
+    }
+    if (s === "rejected" || s === "rechazado" || s === "rechazada") {
+      return { label: "Rechazada", cls: "badge badge--rejected" };
+    }
+    return { label: "Pendiente", cls: "badge badge--pending" };
+  }
+
   return (
     <div className="vacaciones-page space-y-6" style={{ paddingTop: 16 }}>
-      <h1 className="page-title">Vacaciones</h1>
+      <h1 className="page-title">VACACIONES</h1>
 
-      {/* QUITAMOS el debug en producción, pero si lo quieres dejar para ti: */}
-      <p style={{ fontSize: "12px", color: "#888" }}>
-        role detectado: {role || "(sin rol)"}
-      </p>
+      {/* Bloque superior en dos columnas (md+) */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* ==== ADMIN: Bandeja de solicitudes pendientes ==== */}
+        {isAdmin && (
+          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 space-y-4">
+            <h2 className="sec-title sec-title--big">Solicitudes pendientes</h2>
 
-      {/* ==== ADMIN: Bandeja de solicitudes pendientes ==== */}
-      {isAdmin && (
-        <section
-          className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 space-y-4"
-          style={{ marginBottom: 16 }}
-        >
-          <h2 className="text-lg font-semibold text-[var(--text)]">
-            Solicitudes pendientes
-          </h2>
-
-          {pendingRequests.length === 0 ? (
-            <p className="text-[var(--muted)] text-sm">
-              No hay solicitudes pendientes.
-            </p>
-          ) : (
-            <table
-              style={{
-                width: "100%",
-                fontSize: 14,
-                borderCollapse: "collapse",
-              }}
-            >
-              <thead>
-                <tr style={{ textAlign: "left", color: "var(--muted)" }}>
-                  <th>Fisio</th>
-                  <th>Inicio</th>
-                  <th>Fin</th>
-                  <th>Nota</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingRequests.map((r) => (
-                  <tr
-                    key={r._id}
-                    style={{
-                      borderTop: "1px solid var(--border)",
-                    }}
-                  >
-                    <td style={{ padding: "6px 4px" }}>
-                      {r?.fisio
-                        ? `${r.fisio.nombre || ""} ${
-                            r.fisio.apellidos || ""
-                          }`
-                        : "—"}
-                    </td>
-                    <td style={{ padding: "6px 4px" }}>
-                      {new Date(r.startDate).toLocaleDateString()}
-                    </td>
-                    <td style={{ padding: "6px 4px" }}>
-                      {new Date(r.endDate).toLocaleDateString()}
-                    </td>
-                    <td style={{ padding: "6px 4px", maxWidth: 200 }}>
-                      {r.message || "—"}
-                    </td>
-                    <td style={{ padding: "6px 4px", whiteSpace: "nowrap" }}>
-                      <button
-                        className="mr-2 px-2 py-1 rounded border text-xs"
-                        onClick={() => resolveRequest(r._id, "approve")}
-                      >
-                        Aprobar
-                      </button>
-                      <button
-                        className="px-2 py-1 rounded border text-xs"
-                        onClick={() => resolveRequest(r._id, "reject")}
-                      >
-                        Rechazar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
-      )}
-
-      {/* ==== FISIO: Formulario para solicitar vacaciones ==== */}
-      {isFisio && (
-        <section
-          className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 space-y-4"
-          style={{ marginBottom: 16 }}
-        >
-          <h2 className="text-lg font-semibold text-[var(--text)]">
-            Solicitar vacaciones
-          </h2>
-
-          <form
-            onSubmit={submitRequest}
-            className="grid gap-4 md:grid-cols-4"
-            style={{ fontSize: 14 }}
-          >
-            <div className="flex flex-col">
-              <label className="text-[var(--muted)] text-sm mb-1">
-                Inicio
-              </label>
-              <input
-                type="date"
-                className="rounded-lg border bg-[var(--bg)] px-3 py-2"
-                value={reqStart}
-                onChange={(e) => setReqStart(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-[var(--muted)] text-sm mb-1">Fin</label>
-              <input
-                type="date"
-                className="rounded-lg border bg-[var(--bg)] px-3 py-2"
-                value={reqEnd}
-                onChange={(e) => setReqEnd(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col md:col-span-2">
-              <label className="text-[var(--muted)] text-sm mb-1">
-                Comentario (opcional)
-              </label>
-              <input
-                type="text"
-                className="rounded-lg border bg-[var(--bg)] px-3 py-2"
-                placeholder="Viaje familiar..."
-                value={reqMsg}
-                onChange={(e) => setReqMsg(e.target.value)}
-              />
-            </div>
-
-            <div className="md:col-span-4">
-              {errReq && (
-                <p className="text-red-500 text-sm mb-2">{errReq}</p>
-              )}
-              <button
-                type="submit"
-                disabled={savingReq}
-                className="px-4 py-2 rounded-xl border hover:bg-[var(--panel-hover)]"
-              >
-                {savingReq ? "Enviando..." : "Enviar solicitud"}
-              </button>
-            </div>
-          </form>
-
-          {/* Mis solicitudes */}
-          <div className="rounded-xl border bg-[var(--panel)] p-4">
-            <h3 className="font-semibold text-[var(--text)] text-base mb-3">
-              Mis solicitudes
-            </h3>
-            {myRequests.length === 0 ? (
+            {pendingRequests.length === 0 ? (
               <p className="text-[var(--muted)] text-sm">
-                Aún no has solicitado vacaciones.
+                No hay solicitudes pendientes.
               </p>
             ) : (
               <table
@@ -391,60 +245,183 @@ export default function Vacaciones() {
               >
                 <thead>
                   <tr style={{ textAlign: "left", color: "var(--muted)" }}>
+                    <th>Fisio</th>
                     <th>Inicio</th>
                     <th>Fin</th>
-                    <th>Comentario</th>
-                    <th>Estado</th>
+                    <th>Nota</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {myRequests.map((r) => (
-                    <tr
-                      key={r._id}
-                      style={{
-                        borderTop: "1px solid var(--border)",
-                      }}
-                    >
+                  {pendingRequests.map((r) => (
+                    <tr key={r._id} style={{ borderTop: "1px solid var(--border)" }}>
+                      <td style={{ padding: "6px 4px" }}>
+                        {r?.fisio
+                          ? `${r.fisio.nombre || ""} ${r.fisio.apellidos || ""}`
+                          : "—"}
+                      </td>
                       <td style={{ padding: "6px 4px" }}>
                         {new Date(r.startDate).toLocaleDateString()}
                       </td>
                       <td style={{ padding: "6px 4px" }}>
                         {new Date(r.endDate).toLocaleDateString()}
                       </td>
-                      <td style={{ padding: "6px 4px", maxWidth: 220 }}>
+                      <td style={{ padding: "6px 4px", maxWidth: 200 }}>
                         {r.message || "—"}
                       </td>
-                      <td style={{ padding: "6px 4px" }}>
-                        {r.status === "pending" && "Pendiente"}
-                        {r.status === "approved" && "Aprobada ✅"}
-                        {r.status === "rejected" && "Rechazada ❌"}
+                      <td style={{ padding: "6px 4px", whiteSpace: "nowrap" }}>
+                        <button
+                          className="mr-2 px-2 py-1 rounded border text-xs"
+                          onClick={() => resolveRequest(r._id, "approve")}
+                        >
+                          Aprobar
+                        </button>
+                        <button
+                          className="px-2 py-1 rounded border text-xs"
+                          onClick={() => resolveRequest(r._id, "reject")}
+                        >
+                          Rechazar
+                        </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* ==== ADMIN: Formulario crear vacaciones directas ==== */}
-      {isAdmin && (
-        <section className="form-card mb-10">
-          <VacationForm
-            role={"admin"}
-            fisios={fisios}
-            onCreated={() => setReloadKey((x) => x + 1)}
-          />
-        </section>
-      )}
+        {/* ==== ADMIN: Añadir vacaciones ==== */}
+        {isAdmin && (
+          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
+            <h2 className="sec-title sec-title--big">Añadir vacaciones</h2>
+            <VacationForm
+              role={"admin"}
+              fisios={fisios}
+              onCreated={() => setReloadKey((x) => x + 1)}
+            />
+          </section>
+        )}
 
-      {/* ==== Filtro por fisio (solo tiene sentido visual para admin) ==== */}
+        {/* ==== FISIO: Formulario para solicitar + Mis solicitudes ==== */}
+        {isFisio && (
+          <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 space-y-4">
+            <h2 className="sec-title sec-title--big">Solicitar vacaciones</h2>
+
+            <form
+              onSubmit={submitRequest}
+              className="grid gap-4 md:grid-cols-4"
+              style={{ fontSize: 14 }}
+            >
+              <div className="flex flex-col">
+                <label className="text-[var(--muted)] text-sm mb-1">Inicio</label>
+                <input
+                  type="date"
+                  className="rounded-lg border bg-[var(--bg)] px-3 py-2"
+                  value={reqStart}
+                  onChange={(e) => setReqStart(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[var(--muted)] text-sm mb-1">Fin</label>
+                <input
+                  type="date"
+                  className="rounded-lg border bg-[var(--bg)] px-3 py-2"
+                  value={reqEnd}
+                  onChange={(e) => setReqEnd(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col md:col-span-2">
+                <label className="text-[var(--muted)] text-sm mb-1">
+                  Comentario (opcional)
+                </label>
+                <input
+                  type="text"
+                  className="rounded-lg border bg-[var(--bg)] px-3 py-2"
+                  placeholder="Viaje familiar..."
+                  value={reqMsg}
+                  onChange={(e) => setReqMsg(e.target.value)}
+                />
+              </div>
+
+              <div className="md:col-span-4">
+                {errReq && <p className="text-red-500 text-sm mb-2">{errReq}</p>}
+                <button
+                  type="submit"
+                  disabled={savingReq}
+                  className="px-4 py-2 rounded-xl border hover:bg-[var(--panel-hover)]"
+                >
+                  {savingReq ? "Enviando..." : "Enviar solicitud"}
+                </button>
+              </div>
+            </form>
+
+            {/* ==== Mis solicitudes (SIEMPRE visible para fisio) ==== */}
+            <div className="rounded-xl border bg-[var(--panel)] p-4">
+              <h3 className="font-semibold text-[var(--text)] text-base mb-3">
+                Mis solicitudes
+              </h3>
+              {(!myRequests || myRequests.length === 0) ? (
+                <p className="text-[var(--muted)] text-sm">
+                  Aún no has solicitado vacaciones.
+                </p>
+              ) : (
+                <table
+                  style={{
+                    width: "100%",
+                    fontSize: 14,
+                    borderCollapse: "collapse",
+                  }}
+                >
+                  <thead>
+                    <tr style={{ textAlign: "left", color: "var(--muted)" }}>
+                      <th>Inicio</th>
+                      <th>Fin</th>
+                      <th>Comentario</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...myRequests]
+                      .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+                      .map((r) => {
+                        const { label, cls } = statusInfo(r.status || r.estado);
+                        return (
+                          <tr key={r._id} style={{ borderTop: "1px solid var(--border)" }}>
+                            <td style={{ padding: "6px 4px" }}>
+                              {new Date(r.startDate).toLocaleDateString()}
+                            </td>
+                            <td style={{ padding: "6px 4px" }}>
+                              {new Date(r.endDate).toLocaleDateString()}
+                            </td>
+                            <td style={{ padding: "6px 4px", maxWidth: 240 }}>
+                              {r.message || "—"}
+                            </td>
+                            <td style={{ padding: "6px 4px" }}>
+                              <span className={cls}>{label}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* ==== FILTRAR (admin, ancho completo) ==== */}
       {isAdmin && (
-        <div className="filter-card filter-grid rounded-2xl p-5 md:p-6 border bg-[var(--panel)]">
+        <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
+          <h2 className="sec-title sec-title--big">Filtrar</h2>
           <div>
             <label className="block text-sm text-[var(--muted)] mb-1">
-              Filtrar por fisioterapeuta:
+              Fisioterapeuta
             </label>
             <select
               className="w-full rounded-xl border bg-transparent px-3 py-2"
@@ -459,13 +436,12 @@ export default function Vacaciones() {
               ))}
             </select>
           </div>
-        </div>
+        </section>
       )}
 
       {/* Calendario */}
-      <div className="calendar-block mt-6">
+      <div className="calendar-block mt-2">
         {errorVac && <p className="text-red-500">{errorVac}</p>}
-
         {loadingVac ? (
           <div className="rounded-2xl p-6 border bg-[var(--panel)] text-[var(--muted)]">
             Cargando calendario…
@@ -475,7 +451,7 @@ export default function Vacaciones() {
         )}
       </div>
 
-      {/* Lista (vacaciones aprobadas con posible borrar según backend) */}
+      {/* Lista (vacaciones aprobadas) */}
       <VacationsList reloadKey={reloadKey} />
     </div>
   );
