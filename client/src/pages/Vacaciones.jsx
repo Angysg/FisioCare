@@ -4,7 +4,6 @@ import VacationForm from "../components/vacations/VacationForm.jsx";
 import VacationsCalendar from "../components/vacations/VacationsCalendar.jsx";
 import VacationsList from "../components/vacations/VacationsList.jsx";
 
-// arriba del todo de Vacaciones.jsx
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 
@@ -461,7 +460,7 @@ export default function Vacaciones() {
       )}
 
       {/* Calendario */}
-      <div className="calendar-block mt-8">
+      <div className="calendar-block mt-8" style={{ marginBottom: 60 }}>
 
         {errorVac && <p className="text-red-500">{errorVac}</p>}
         {loadingVac ? (
