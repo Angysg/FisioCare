@@ -4,6 +4,10 @@ import VacationForm from "../components/vacations/VacationForm.jsx";
 import VacationsCalendar from "../components/vacations/VacationsCalendar.jsx";
 import VacationsList from "../components/vacations/VacationsList.jsx";
 
+// arriba del todo de Vacaciones.jsx
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+
 import {
   apiListVacations,
   apiListFisioterapeutasSimple,
