@@ -10,7 +10,7 @@ import fisiosRouter from './routes/fisios.js';
 import vacationsRouter from './routes/vacations.js';
 import fisioAccessRoutes from './routes/fisio.access.routes.js';
 import vacationRequestsRoutes from './routes/vacationRequests.js';
-
+import seguimientosRouter from "./routes/seguimientos.js";
 
 dotenv.config();
 
@@ -21,13 +21,11 @@ app.use(morgan('dev'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/pacientes', pacientesRoutes);
-
 app.use('/api/fisios', fisiosRouter);
 app.use('/api/vacations', vacationsRouter);
-
 app.use("/api/fisio-access", fisioAccessRoutes);
-
 app.use('/api/vacation-requests', vacationRequestsRoutes);
+app.use('/api/seguimientos', seguimientosRouter); // CRUD de seguimientos
 
 const PORT = process.env.PORT || 4000;
 connectDB().then(() => {

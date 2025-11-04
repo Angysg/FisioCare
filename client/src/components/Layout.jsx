@@ -18,7 +18,7 @@ export default function Layout() {
     { to: "/dashboard", label: "Inicio" },
     { to: "/pacientes", label: "Pacientes" },
     { to: "/citas", label: "Citas" },
-    { to: "/seguimiento", label: "Seguimiento y Valoración" },
+    { to: "/seguimientos", label: "Seguimiento y Valoración" },
     { to: "/pilates", label: "Grupo Pilates" },
     { to: "/vacaciones", label: "Vacaciones" },
   ];

@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // http://localhost:4000
+  baseURL: import.meta.env.VITE_API_URL, // p.ej. http://localhost:4000
 });
 
 api.interceptors.request.use((config) => {
@@ -40,7 +40,6 @@ export async function apiUpdatePaciente(id, payload) {
 // ===================== FISIOS =====================
 const FISIOS_BASE = '/api/fisios';
 
-
 export async function apiListFisios({ q = '', sort = 'alpha' } = {}) {
   const { data } = await api.get(FISIOS_BASE, { params: { q, sort } });
   return data?.data || [];
@@ -70,14 +69,26 @@ export async function apiDeleteFisio(id) {
 
 export async function apiCreateFisioAccess(id, password) {
   const { data } = await api.post(`/api/fisio-access/${id}/create`, { password });
-  return data; // { ok, data: { created, tempPassword } }
+  return data;
 }
 
 export async function apiResetFisioPassword(id, password) {
   const { data } = await api.post(`/api/fisio-access/${id}/reset`, { password });
-  return data; // { ok, data: { reset, tempPassword } }
+  return data;
 }
 
+// Fisioterapeutas (para el selector del formulario) — **ÚNICA**
+export async function apiListFisioterapeutasSimple() {
+  const { data } = await api.get(FISIOS_BASE, { params: { sort: 'alpha', limit: 1000 } });
+  const raw = (data && (data.data ?? data.items ?? data.list ?? data.results ?? data)) || [];
+  const arr = Array.isArray(raw) ? raw : [];
+  return arr.map((f) => ({
+    _id: f._id || f.id,
+    nombre: f.nombre || f.firstName || "",
+    apellidos: f.apellidos || f.lastName || "",
+    email: f.email || "",
+  }));
+}
 
 // ===================== VACACIONES =====================
 const VAC_BASE = '/api/vacations';
@@ -104,47 +115,67 @@ export async function apiDeleteVacation(id) {
   return true;
 }
 
-// Fisioterapeutas (para el selector del formulario)
-export async function apiListFisioterapeutasSimple() {
-  // ajusta si tu endpoint real difiere:
-  // puedes tener filtros ?q=&sort=alpha, etc. Usamos mínimamente.
-  const { data } = await api.get(FISIOS_BASE, { params: { sort: 'alpha' } });
-  const list = data?.data || data; // adapta a tu forma de respuesta
-  return (list || []).map(f => ({
-    _id: f._id,
-    nombre: f.nombre,
-    apellidos: f.apellidos,
-    email: f.email,
-  }));
-}
-
 // ===================== VACATION REQUESTS (solicitudes) =====================
 const VAC_REQ_BASE = '/api/vacation-requests';
 
-// Fisio crea solicitud
 export async function apiCreateVacationRequest({ startDate, endDate, message }) {
   const { data } = await api.post(VAC_REQ_BASE, { startDate, endDate, message });
   return data;
 }
 
-// Fisio ve sus solicitudes
 export async function apiListMyVacationRequests() {
   const { data } = await api.get(`${VAC_REQ_BASE}/mine`);
   return data?.data || [];
 }
 
-// Admin ve pendientes
 export async function apiListPendingVacationRequests() {
   const { data } = await api.get(`${VAC_REQ_BASE}/pending`);
   return data?.data || [];
 }
 
-// Admin resuelve (approve / reject)
 export async function apiResolveVacationRequest(id, action) {
   const { data } = await api.post(`${VAC_REQ_BASE}/${id}/resolve`, { action });
   return data;
 }
 
+// ===================== SEGUIMIENTOS =====================
+export async function apiListSeguimientos(params = {}) {
+  const { data } = await api.get("/api/seguimientos", { params });
+  return data.items || [];
+}
 
+export async function apiCountSeguimientos(params = {}) {
+  const { data } = await api.get("/api/seguimientos", { params });
+  return { total: data.total, page: data.page, limit: data.limit, items: data.items };
+}
+
+export async function apiGetSeguimiento(id) {
+  const { data } = await api.get(`/api/seguimientos/${id}`);
+  return data.data;
+}
+
+export async function apiCreateSeguimiento(payload) {
+  try {
+    const { data } = await api.post("/api/seguimientos", payload);
+    return data.data;
+  } catch (err) {
+    // Propaga el mensaje del backend, si existe
+    const msg =
+      err?.response?.data?.error ||
+      err?.message ||
+      "No se pudo crear el seguimiento";
+    throw new Error(msg);
+  }
+}
+
+export async function apiUpdateSeguimiento(id, payload) {
+  const { data } = await api.put(`/api/seguimientos/${id}`, payload);
+  return data.data;
+}
+
+export async function apiDeleteSeguimiento(id) {
+  const { data } = await api.delete(`/api/seguimientos/${id}`);
+  return data;
+}
 
 export default api;
