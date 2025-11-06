@@ -36,3 +36,4 @@ router.post('/login', async (req, res) => {
 router.get('/me', requireAuth, (req, res) => res.json({ user: req.user }));
 
 export default router;
+ 

@@ -11,10 +11,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ===================== PACIENTES API HELPERS =====================
-const PACIENTES_BASE = '/api/pacientes';
+// ===================== PACIENTES =====================
+const PACIENTES_BASE = "/api/pacientes";
 
-export async function apiListPacientes({ q = '', sort = 'alpha' } = {}) {
+export async function apiListPacientes({ q = "", sort = "alpha" } = {}) {
   const { data } = await api.get(PACIENTES_BASE, { params: { q, sort } });
   return data?.data || [];
 }
@@ -22,7 +22,7 @@ export async function apiListPacientes({ q = '', sort = 'alpha' } = {}) {
 export async function apiDeletePaciente(id) {
   const { data } = await api.delete(`${PACIENTES_BASE}/${id}`);
   if (data?.ok !== true && data?.deletedId !== id) {
-    // tolerante con diferentes respuestas del backend
+    // tolerante
   }
   return true;
 }
@@ -38,16 +38,16 @@ export async function apiUpdatePaciente(id, payload) {
 }
 
 // ===================== FISIOS =====================
-const FISIOS_BASE = '/api/fisios';
+const FISIOS_BASE = "/api/fisios";
 
-export async function apiListFisios({ q = '', sort = 'alpha' } = {}) {
+export async function apiListFisios({ q = "", sort = "alpha" } = {}) {
   const { data } = await api.get(FISIOS_BASE, { params: { q, sort } });
   return data?.data || [];
 }
 
 export async function apiCreateFisio(payload) {
   const { data } = await api.post(FISIOS_BASE, payload);
-  if (data?.ok !== true) throw new Error(data?.error || 'Error creando fisio');
+  if (data?.ok !== true) throw new Error(data?.error || "Error creando fisio");
   return data.data;
 }
 
@@ -63,7 +63,7 @@ export async function apiUpdateFisio(id, payload) {
 
 export async function apiDeleteFisio(id) {
   const { data } = await api.delete(`${FISIOS_BASE}/${id}`);
-  if (data?.ok !== true) throw new Error('No se pudo eliminar');
+  if (data?.ok !== true) throw new Error("No se pudo eliminar");
   return true;
 }
 
@@ -77,9 +77,9 @@ export async function apiResetFisioPassword(id, password) {
   return data;
 }
 
-// Fisioterapeutas (para el selector del formulario) — **ÚNICA**
+// Para selects sencillos
 export async function apiListFisioterapeutasSimple() {
-  const { data } = await api.get(FISIOS_BASE, { params: { sort: 'alpha', limit: 1000 } });
+  const { data } = await api.get(FISIOS_BASE, { params: { sort: "alpha", limit: 1000 } });
   const raw = (data && (data.data ?? data.items ?? data.list ?? data.results ?? data)) || [];
   const arr = Array.isArray(raw) ? raw : [];
   return arr.map((f) => ({
@@ -91,32 +91,37 @@ export async function apiListFisioterapeutasSimple() {
 }
 
 // ===================== VACACIONES =====================
-const VAC_BASE = '/api/vacations';
+const VAC_BASE = "/api/vacations";
 
-export async function apiListVacations({ from, to } = {}) {
+export async function apiListVacations({ from, to, physio, fisioId } = {}) {
   const params = {};
   if (from) params.from = from;
-  if (to)   params.to   = to;
+  if (to) params.to = to;
+  // acepta cualquiera de los dos nombres
+  if (physio) params.physio = physio;
+  if (fisioId) params.fisioId = fisioId;
+
   const { data } = await api.get(VAC_BASE, { params });
-  return data?.data || [];
+  // devuelvo array “plano”, intenta varias claves por compatibilidad
+  return data?.data || data?.items || data || [];
 }
 
-export async function apiCreateVacation({ startDate, endDate, notes = '', fisioId }) {
+export async function apiCreateVacation({ startDate, endDate, notes = "", fisioId }) {
   const payload = { startDate, endDate, notes };
   if (fisioId) payload.fisioId = fisioId;
   const { data } = await api.post(VAC_BASE, payload);
-  if (data?.ok !== true) throw new Error(data?.error || 'No se pudo crear');
-  return data.data;
+  if (data?.ok !== true) throw new Error(data?.error || "No se pudo crear");
+  return data.data || data;
 }
 
 export async function apiDeleteVacation(id) {
   const { data } = await api.delete(`${VAC_BASE}/${id}`);
-  if (data?.ok !== true) throw new Error(data?.error || 'No se pudo eliminar');
+  if (data?.ok !== true) throw new Error(data?.error || "No se pudo eliminar");
   return true;
 }
 
-// ===================== VACATION REQUESTS (solicitudes) =====================
-const VAC_REQ_BASE = '/api/vacation-requests';
+// ===================== VACATION REQUESTS =====================
+const VAC_REQ_BASE = "/api/vacation-requests";
 
 export async function apiCreateVacationRequest({ startDate, endDate, message }) {
   const { data } = await api.post(VAC_REQ_BASE, { startDate, endDate, message });
@@ -159,7 +164,6 @@ export async function apiCreateSeguimiento(payload) {
     const { data } = await api.post("/api/seguimientos", payload);
     return data.data;
   } catch (err) {
-    // Propaga el mensaje del backend, si existe
     const msg =
       err?.response?.data?.error ||
       err?.message ||
@@ -175,6 +179,30 @@ export async function apiUpdateSeguimiento(id, payload) {
 
 export async function apiDeleteSeguimiento(id) {
   const { data } = await api.delete(`/api/seguimientos/${id}`);
+  return data;
+}
+
+// ===================== CITAS =====================
+const APPTS_BASE = "/api/appointments";
+
+export async function apiListAppointments(params) {
+  const { data } = await api.get(APPTS_BASE, { params });
+  return data;
+}
+export async function apiCreateAppointment(payload) {
+  const { data } = await api.post(APPTS_BASE, payload);
+  return data;
+}
+export async function apiUpdateAppointment(id, payload) {
+  const { data } = await api.put(`${APPTS_BASE}/${id}`, payload);
+  return data;
+}
+export async function apiDeleteAppointment(id) {
+  const { data } = await api.delete(`${APPTS_BASE}/${id}`);
+  return data;
+}
+export async function apiZonesStats(params) {
+  const { data } = await api.get(`${APPTS_BASE}/stats/zones`, { params });
   return data;
 }
 

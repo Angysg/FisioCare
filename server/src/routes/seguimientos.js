@@ -1,12 +1,13 @@
 import { Router } from "express";
 import mongoose from "mongoose";
 import Seguimiento from "../models/Seguimiento.js";
+import BODY_ZONES from "../constants/bodyZones.js";
 
 // Pacientes
 import * as PacienteMod from "../models/Paciente.js";
 const Paciente = PacienteMod.default || PacienteMod.Paciente;
 
-// Fisios (colección fisios)
+// Fisios
 import * as FisioMod from "../models/Fisio.js";
 const Fisio = FisioMod.default || FisioMod.Fisio;
 
@@ -15,7 +16,6 @@ const router = Router();
 /* ============ utils ============ */
 async function resolverPacienteIdDesdeTexto(pacienteId, pacienteNombre) {
   if (pacienteId) return pacienteId;
-
   const texto = (pacienteNombre || "").trim();
   if (!texto) return null;
 
@@ -91,16 +91,11 @@ router.get("/", async (req, res) => {
 
       const pacientesIds = await Paciente.find({
         $or: [{ nombre: r }, { apellidos: r }, { email: r }],
-      })
-        .select("_id")
-        .lean();
+      }).select("_id").lean();
 
-      // Buscar también en "fisios" (NO en users)
       const fisiosIds = await Fisio.find({
         $or: [{ nombre: r }, { apellidos: r }, { email: r }],
-      })
-        .select("_id")
-        .lean();
+      }).select("_id").lean();
 
       const pIds = pacientesIds.map((x) => x._id);
       const fIds = fisiosIds.map((x) => x._id);
@@ -119,7 +114,7 @@ router.get("/", async (req, res) => {
     const [items, total] = await Promise.all([
       Seguimiento.find(find)
         .populate("paciente", "nombre apellidos email")
-        .populate("fisio", "nombre apellidos email") // <- Fisio
+        .populate("fisio", "nombre apellidos email")
         .sort(sortObj)
         .skip(skip)
         .limit(limitNum)
@@ -152,7 +147,7 @@ router.get("/:id", async (req, res) => {
 /** CREAR */
 router.post("/", async (req, res) => {
   try {
-    let { pacienteId, pacienteNombre, fisioId, fecha, comentario } = req.body;
+    let { pacienteId, pacienteNombre, fisioId, fecha, comentario, primeraConsulta = false, bodyZones = [] } = req.body;
 
     if (!fisioId) return res.status(400).json({ error: "Falta 'fisioId'." });
     if (!fecha) return res.status(400).json({ error: "Falta 'fecha'." });
@@ -166,13 +161,18 @@ router.post("/", async (req, res) => {
     const fechaOk = toDateOrNull(fecha);
     if (!fechaOk) return res.status(400).json({ error: "La 'fecha' no es válida." });
 
+    // Limpiar zonas a las válidas
+    const zonas = (Array.isArray(bodyZones) ? bodyZones : []).filter(z => BODY_ZONES.includes(z));
+
     const resolvedPacienteId = await resolverPacienteIdDesdeTexto(pacienteId, pacienteNombre);
 
     const created = await Seguimiento.create({
       paciente: resolvedPacienteId || undefined,
       pacienteNombre: pacienteNombre || undefined,
-      fisio: fisioId, // <- guarda id de Fisio
+      fisio: fisioId,
       fecha: fechaOk,
+      primeraConsulta: !!primeraConsulta,
+      bodyZones: zonas,
       comentario: comentario || "",
     });
 
@@ -196,7 +196,7 @@ router.post("/", async (req, res) => {
 /** ACTUALIZAR */
 router.put("/:id", async (req, res) => {
   try {
-    const { pacienteId, pacienteNombre, fisioId, fecha, comentario } = req.body;
+    const { pacienteId, pacienteNombre, fisioId, fecha, comentario, primeraConsulta, bodyZones } = req.body;
     const update = {};
 
     const resolvedPacienteId = await resolverPacienteIdDesdeTexto(pacienteId, pacienteNombre);
@@ -206,7 +206,7 @@ router.put("/:id", async (req, res) => {
     if (fisioId) {
       if (!mongoose.isValidObjectId(fisioId))
         return res.status(400).json({ error: "El 'fisioId' no es un ObjectId válido." });
-      update.fisio = fisioId; // <- Fisio
+      update.fisio = fisioId;
     }
 
     if (fecha) {
@@ -216,6 +216,8 @@ router.put("/:id", async (req, res) => {
     }
 
     if (comentario !== undefined) update.comentario = comentario;
+    if (typeof primeraConsulta === "boolean") update.primeraConsulta = primeraConsulta;
+    if (Array.isArray(bodyZones)) update.bodyZones = bodyZones.filter(z => BODY_ZONES.includes(z));
 
     const doc = await Seguimiento.findByIdAndUpdate(req.params.id, update, { new: true })
       .populate("paciente", "nombre apellidos email")

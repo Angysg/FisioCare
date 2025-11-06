@@ -23,6 +23,8 @@ export default function Dashboard() {
       to: "/fisioterapeutas",
       desc: "Altas, permisos y roles",
     },
+    { title: "Analítica de dolencias", to: "/analitica-dolencias", desc: "Zonas más tratadas" }
+
   ];
 
   const cards = role === "admin" ? [...comunes, ...adminOnly] : comunes;

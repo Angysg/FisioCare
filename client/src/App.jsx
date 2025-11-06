@@ -15,9 +15,10 @@ import Vacaciones from "./pages/Vacaciones.jsx";
 
 import EditPaciente from "./pages/EditPaciente.jsx";
 import EditFisioterapeuta from "./pages/EditFisioterapeuta.jsx";
-
 import Seguimientos from "./pages/Seguimientos.jsx";
 import EditSeguimiento from "./pages/EditSeguimiento.jsx";
+import AnaliticaDolencias from "./pages/AnaliticaDolencias.jsx";
+
 
 export default function App() {
   return (
@@ -45,6 +46,8 @@ export default function App() {
           <Route path="/seguimientos/:id/editar" element={<EditSeguimiento />} />
           <Route path="/seguimiento" element={<Navigate to="/seguimientos" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/analitica-dolencias" element={<AnaliticaDolencias />} />
+
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

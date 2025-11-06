@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../auth";
+import BODY_ZONES from "../constants/bodyZones.js";
+import BodyZonesSelect from "../components/appointments/BodyZonesSelect.jsx";
 
 import {
   apiListSeguimientos,
@@ -29,19 +31,19 @@ function AdjButton({ children, onClick, variant = "action" }) {
   const palette =
     variant === "delete"
       ? {
-          color: "#b91c1c",
-          border: "1px solid rgba(185,28,28,0.35)",
-          background: "rgba(185,28,28,0.05)",
-          hoverBg: "rgba(185,28,28,0.12)",
-          focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
-        }
+        color: "#b91c1c",
+        border: "1px solid rgba(185,28,28,0.35)",
+        background: "rgba(185,28,28,0.05)",
+        hoverBg: "rgba(185,28,28,0.12)",
+        focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
+      }
       : {
-          color: "var(--link)",
-          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-          background: "color-mix(in srgb, var(--link) 6%, transparent)",
-          hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
-          focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
-        };
+        color: "var(--link)",
+        border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+        background: "color-mix(in srgb, var(--link) 6%, transparent)",
+        hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
+        focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+      };
 
   const [bg, setBg] = useState(palette.background);
 
@@ -88,7 +90,7 @@ function SeguimientoRow({ item, isOpen, onToggle, onEdit, onDelete }) {
     if (!el) return;
     if (isOpen) setH(el.scrollHeight);
     else setH(0);
-  }, [isOpen, item?.comentario]);
+  }, [isOpen, item?.comentario, item?.bodyZones, item?.primeraConsulta]);
 
   const fechaStr = useMemo(() => {
     try {
@@ -141,12 +143,12 @@ function SeguimientoRow({ item, isOpen, onToggle, onEdit, onDelete }) {
         }}
       >
         <div>
-          {/* <<< SOLO CAMBIADO: fuerza color legible y un pelín más grande >>> */}
           <div style={{ fontWeight: 700, color: "var(--text)", fontSize: 16 }}>
             {nombrePaciente}
           </div>
           <div style={{ color: "var(--muted)", fontSize: 13 }}>
             {fechaStr} · {nombreFisio}
+            {item.primeraConsulta ? " · Primera consulta" : ""}
           </div>
         </div>
 
@@ -164,7 +166,19 @@ function SeguimientoRow({ item, isOpen, onToggle, onEdit, onDelete }) {
       <div style={{ height: h, overflow: "hidden", transition: "height 300ms" }}>
         <div ref={wrapRef}>
           <div style={{ padding: "0 14px 14px 14px", fontSize: 14 }}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Comentario</div>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>Zonas del cuerpo</div>
+            {Array.isArray(item.bodyZones) && item.bodyZones.length > 0
+              ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {item.bodyZones.map(z => (
+                  <span key={z} style={{ fontSize: 12, padding: "2px 6px", border: "1px solid var(--border)", borderRadius: 6 }}>
+                    {String(z).replaceAll("_", " ")}
+                  </span>
+                ))}
+              </div>
+              : <i style={{ color: "var(--muted)" }}>—</i>
+            }
+
+            <div style={{ fontWeight: 600, marginTop: 12, marginBottom: 6 }}>Comentario</div>
             <div style={{ whiteSpace: "pre-wrap" }}>
               {item.comentario?.trim() ? item.comentario : <i style={{ color: "var(--muted)" }}>—</i>}
             </div>
@@ -191,6 +205,8 @@ export default function Seguimientos() {
     fisioId: "",
     fecha: "",
     comentario: "",
+    primeraConsulta: false,
+    bodyZones: [],
   });
 
   const nav = useNavigate();
@@ -203,9 +219,6 @@ export default function Seguimientos() {
       try {
         const fs = await apiListFisioterapeutasSimple();
         setFisios(fs || []);
-        if (!fs || fs.length === 0) {
-          console.warn("No se han recibido fisioterapeutas. Revisa /api/fisios.");
-        }
       } catch (e) {
         console.error("Error cargando fisioterapeutas", e);
         alert("No se pudieron cargar los fisioterapeutas");
@@ -232,7 +245,7 @@ export default function Seguimientos() {
   }
 
   useEffect(() => {
-    load().catch(() => {});
+    load().catch(() => { });
   }, []);
 
   async function crearSeguimiento(e) {
@@ -246,13 +259,15 @@ export default function Seguimientos() {
       fisioId: form.fisioId,
       fecha: form.fecha,
       comentario: form.comentario || "",
+      primeraConsulta: !!form.primeraConsulta,
+      bodyZones: form.bodyZones || [],
     };
 
     try {
       const nuevo = await apiCreateSeguimiento(payload);
-      setList(prev => [nuevo, ...prev]); // optimista
-      setForm({ pacienteNombre: "", fisioId: "", fecha: "", comentario: "" });
-      load().catch(() => {}); // recarga silenciosa
+      setList(prev => [nuevo, ...prev]);
+      setForm({ pacienteNombre: "", fisioId: "", fecha: "", comentario: "", primeraConsulta: false, bodyZones: [] });
+      load().catch(() => { });
       setSelected(nuevo);
       alert("Seguimiento creado");
     } catch (e) {
@@ -394,6 +409,46 @@ export default function Seguimientos() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* PRIMERA CONSULTA (una sola línea) */}
+<div className="form-field" style={{ marginTop: 6 }}>
+  <label
+    htmlFor="primeraConsulta"
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+      margin: 0,
+      fontWeight: 400,
+      whiteSpace: "nowrap",   // <- evita salto de línea
+      cursor: "pointer",
+    }}
+  >
+    <input
+      id="primeraConsulta"
+      type="checkbox"
+      checked={!!form.primeraConsulta}
+      onChange={(e) => setForm({ ...form, primeraConsulta: e.target.checked })}
+      style={{ margin: 0 }}
+    />
+    ¿Primera consulta?
+  </label>
+</div>
+
+
+            {/* Zonas del cuerpo */}
+            <div className="form-field" style={{ marginTop: 8 }}>
+              <label style={{ display: "block", fontWeight: 500, marginBottom: 6 }}>
+                Zonas del cuerpo
+              </label>
+
+              <BodyZonesSelect
+                value={form.bodyZones || []}
+                onChange={(v) => setForm({ ...form, bodyZones: v })}
+                defaultOpen="Tronco"
+              // title={null}
+              />
             </div>
 
             <div className="form-field">

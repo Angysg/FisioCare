@@ -10,6 +10,14 @@ function normalizeDate(d) {
   return Number.isNaN(x.getTime()) ? null : x;
 }
 
+// helper para query (?start&end) que arregla el '+' -> ' ' de la URL
+function parseQDate(v) {
+  if (!v) return null;
+  const s = String(v).replace(' ', '+');
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
 function canDelete(user, vacation) {
   if (user.role === 'admin') return true;
   return String(vacation.fisio) === String(user.id);
@@ -17,7 +25,6 @@ function canDelete(user, vacation) {
 
 /**
  * GET /api/vacations
- *
  * - Admin: ve todas
  * - Fisioterapeuta: solo las suyas
  */
@@ -26,11 +33,8 @@ router.get('/', requireAuth, async (req, res) => {
     let filter = {};
 
     if (req.user.role === 'fisioterapeuta') {
-      // buscar el fisio asociado a este user por email
       const fisioDoc = await Fisio.findOne({ email: req.user.email }).lean();
-      if (!fisioDoc?._id) {
-        return res.json({ ok: true, data: [] });
-      }
+      if (!fisioDoc?._id) return res.json({ ok: true, data: [] });
       filter = { fisio: fisioDoc._id };
     }
 
@@ -53,8 +57,6 @@ router.get('/', requireAuth, async (req, res) => {
 
 /**
  * POST /api/vacations
- * Admin puede crear para cualquier fisio (con fisioId)
- * Fisioterapeuta crea solo las suyas
  */
 router.post('/', requireAuth, async (req, res) => {
   try {
@@ -65,30 +67,20 @@ router.post('/', requireAuth, async (req, res) => {
     if (start > end)    return res.status(400).json({ ok: false, error: 'Fecha inicio posterior a fin' });
 
     let fisioToUse = null;
-
     if (req.user.role === 'admin') {
-      // admin puede elegir para quién
-      if (!fisioId) {
-        return res.status(400).json({ ok: false, error: 'falta fisioId' });
-      }
+      if (!fisioId) return res.status(400).json({ ok: false, error: 'falta fisioId' });
       fisioToUse = fisioId;
     } else {
-      // fisioterapeuta -> buscamos su Fisio por email
       const fisioDoc = await Fisio.findOne({ email: req.user.email }).lean();
-      if (!fisioDoc?._id) {
-        return res.status(400).json({ ok: false, error: 'No se encontró tu ficha de fisio' });
-      }
+      if (!fisioDoc?._id) return res.status(400).json({ ok: false, error: 'No se encontró tu ficha de fisio' });
       fisioToUse = fisioDoc._id;
     }
 
-    // evitar solapes
     const overlap = await Vacation.findOne({
       fisio: fisioToUse,
       $or: [{ startDate: { $lte: end }, endDate: { $gte: start } }],
     }).lean();
-    if (overlap) {
-      return res.status(409).json({ ok: false, error: 'Rango solapado para ese fisioterapeuta' });
-    }
+    if (overlap) return res.status(409).json({ ok: false, error: 'Rango solapado para ese fisioterapeuta' });
 
     const newVac = await Vacation.create({
       fisio: fisioToUse,
@@ -109,8 +101,6 @@ router.post('/', requireAuth, async (req, res) => {
 
 /**
  * DELETE /api/vacations/:id
- * - Admin puede eliminar cualquiera
- * - Fisio solo las suyas
  */
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
@@ -126,6 +116,40 @@ router.delete('/:id', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('DELETE /vacations/:id', err);
     res.status(500).json({ ok: false, error: 'Error al eliminar vacaciones' });
+  }
+});
+
+/**
+ * GET /api/vacations/events
+ * Devuelve vacaciones como background para FullCalendar
+ */
+router.get('/events', requireAuth, async (req, res) => {
+  try {
+    const startD = parseQDate(req.query.start);
+    const endD   = parseQDate(req.query.end);
+    if (!startD || !endD) return res.status(400).json({ ok:false, error:'start/end inválidos' });
+
+    const items = await Vacation.find({
+      startDate: { $lt: endD },
+      endDate:   { $gt: startD }
+    })
+    .populate('fisio','nombre apellidos')
+    .lean();
+
+    const events = items.map(v => ({
+      id: `vac-${v._id}`,
+      title: `Vacaciones —  ${`${v?.fisio?.nombre ?? ''} ${v?.fisio?.apellidos ?? ''}`.trim() || 'Fisio'}`,
+      start: v.startDate,
+      end: v.endDate,
+      display: 'background',
+      overlap: false,
+      extendedProps: { fisioId: v.fisio?._id }
+    }));
+
+    res.json(events);
+  } catch (err) {
+    console.error('GET /vacations/events', err);
+    res.status(500).json({ ok:false, error:'Error al obtener eventos de vacaciones' });
   }
 });
 

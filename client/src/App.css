@@ -423,3 +423,31 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
 
 
 .vacaciones-page .calendar-block { margin-top: 28px !important; }
+
+
+/* Evitar que las zonas del cuerpo se rompan letra a letra */
+.zones-grid span,
+label span {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  white-space: nowrap !important;
+}
+
+
+
+/* Acordeones de BodyZonesSelect */
+.form-field details > summary::-webkit-details-marker { display: none; }
+.form-field details[open] > summary span[aria-hidden] { transform: rotate(180deg); }
+
+/* Evitar que estilos globales de input afecten a summary/details */
+.form-field details,
+.form-field summary {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.form-field details {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
