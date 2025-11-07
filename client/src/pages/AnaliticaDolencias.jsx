@@ -53,7 +53,7 @@ export default function AnaliticaDolencias() {
 
   return (
     <main className="container" style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <h1 className="page-title" style={{ marginBottom: 8 }}>Analítica de dolencias</h1>
+      <h1 className="page-title" style={{ marginBottom: 8 }}>ANALÍTICA DE DOLENCIAS</h1>
 
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
         <label>Rango:</label>

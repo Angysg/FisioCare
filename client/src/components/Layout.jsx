@@ -21,6 +21,9 @@ export default function Layout() {
     setUser(u || null);
   }, []);
 
+  const isAdmin = role.includes("admin");         // cubre "admin" y "administrador"
+  const isRecepcion = role.includes("recepcion"); // cubre "recepción" normalizada
+
   // links para la navegación central
   const baseLinks = [
     { to: "/dashboard", label: "Inicio" },
@@ -31,18 +34,17 @@ export default function Layout() {
     { to: "/vacaciones", label: "Vacaciones" },
   ];
 
-  const adminLinks =
-    role === "admin"
-      ? [{ to: "/fisioterapeutas", label: "Fisioterapeutas" }]
-      : [];
+  const adminLinks = isAdmin
+    ? [
+        { to: "/fisioterapeutas", label: "Fisioterapeutas" },
+        { to: "/analitica-dolencias", label: "Analítica" }, // ✅ nuevo enlace
+      ]
+    : [];
 
   // Recepción: mostrar SIEMPRE Inicio + Pacientes + Citas
-  const links =
-    role === "recepcion"
-      ? baseLinks.filter((l) =>
-          ["/dashboard", "/pacientes", "/citas"].includes(l.to)
-        )
-      : [...baseLinks, ...adminLinks];
+  const links = isRecepcion
+    ? baseLinks.filter((l) => ["/dashboard", "/pacientes", "/citas"].includes(l.to))
+    : [...baseLinks, ...adminLinks];
 
   // estilos reutilizables
   const userChipStyle = {
