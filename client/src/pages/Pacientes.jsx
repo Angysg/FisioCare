@@ -24,23 +24,23 @@ function AdjButton({ children, onClick, variant = "action" }) {
   const palette =
     variant === "delete"
       ? {
-          color: "#b91c1c",
-          border: "1px solid rgba(185,28,28,0.35)",
-          background: "rgba(185,28,28,0.05)",
-          hoverBg: "rgba(185,28,28,0.12)",
-          focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
-        }
+        color: "#b91c1c",
+        border: "1px solid rgba(185,28,28,0.35)",
+        background: "rgba(185,28,28,0.05)",
+        hoverBg: "rgba(185,28,28,0.12)",
+        focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
+      }
       : {
-          color: "var(--link)",
-          border:
-            "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-          background:
-            "color-mix(in srgb, var(--link) 6%, transparent)",
-          hoverBg:
-            "color-mix(in srgb, var(--link) 15%, transparent)",
-          focusRing:
-            "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
-        };
+        color: "var(--link)",
+        border:
+          "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+        background:
+          "color-mix(in srgb, var(--link) 6%, transparent)",
+        hoverBg:
+          "color-mix(in srgb, var(--link) 15%, transparent)",
+        focusRing:
+          "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+      };
 
   const [bg, setBg] = useState(palette.background);
 
@@ -146,7 +146,7 @@ function PacienteRow({
       >
         <div>
           <div
-            className="name"
+            className="title"
             style={{ fontWeight: 600 }}
           >
             {paciente.nombre} {paciente.apellidos}
@@ -212,7 +212,7 @@ function PacienteRow({
             className="detalle"
             style={{
               padding: "0 14px 14px 14px",
-              fontSize: 14,
+              fontSize: "calc(var(--list-font-size) * 0.90)", 
             }}
           >
             <div
@@ -599,12 +599,14 @@ export default function Pacientes() {
           <h3>Listado</h3>
           <ul
             id="listaPacientes"
+            className="adj-list"
             style={{
               listStyle: "none",
               padding: 0,
               margin: 0,
               display: "grid",
               gap: 12,
+              fontSize: "var(--list-font-size)",
             }}
           >
             {list.map((p) => {

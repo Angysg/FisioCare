@@ -28,19 +28,19 @@ function AdjButton({ children, onClick, variant = "action", disabled = false, ti
   const palette =
     variant === "delete"
       ? {
-          color: "#b91c1c",
-          border: "1px solid rgba(185,28,28,0.35)",
-          background: "rgba(185,28,28,0.05)",
-          hoverBg: "rgba(185,28,28,0.12)",
-          focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
-        }
+        color: "#b91c1c",
+        border: "1px solid rgba(185,28,28,0.35)",
+        background: "rgba(185,28,28,0.05)",
+        hoverBg: "rgba(185,28,28,0.12)",
+        focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
+      }
       : {
-          color: "var(--link)",
-          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-          background: "color-mix(in srgb, var(--link) 6%, transparent)",
-          hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
-          focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
-        };
+        color: "var(--link)",
+        border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+        background: "color-mix(in srgb, var(--link) 6%, transparent)",
+        hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
+        focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+      };
   const [bg, setBg] = useState(palette.background);
   const safe = (fn) => (e) => { if (!disabled) fn?.(e); };
 
@@ -92,10 +92,12 @@ function FisioRow({ fisio, isOpen, onToggle, onEdit, onDelete, deleting }) {
         margin: 0,
         borderRadius: 12,
         background: "var(--panel)",
-        border: "1px solid var(--border)",
+        border: `1px solid ${isOpen
+          ? "color-mix(in srgb, var(--link) 28%, var(--border))"
+          : "var(--border)"}`,
         transition: "box-shadow 200ms, border-color 200ms",
         boxShadow: isOpen
-          ? "0 0 0 2px color-mix(in oklab, var(--link) 45%, transparent)"
+          ? "0 0 0 1.5px color-mix(in srgb, var(--link) 24%, transparent)"
           : "0 1px 8px rgba(0,0,0,0.06)",
       }}
     >
@@ -118,8 +120,10 @@ function FisioRow({ fisio, isOpen, onToggle, onEdit, onDelete, deleting }) {
       >
         <div style={{ minWidth: 0 }}>
           <div
+            className="title"
             style={{
               fontWeight: 600,
+              fontSize: "var(--list-title-size)",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -149,7 +153,7 @@ function FisioRow({ fisio, isOpen, onToggle, onEdit, onDelete, deleting }) {
 
       <div style={{ height: h, overflow: "hidden", transition: "height 300ms" }}>
         <div ref={wrapRef}>
-          <div style={{ padding: "0 14px 14px 14px", fontSize: 14 }}>
+          <div style={{ padding: "0 14px 14px 14px",   fontSize: "calc(var(--list-font-size) * 0.90)", }}>
             <div style={{ color: "var(--muted)", marginBottom: 8 }}>
               {fisio?.email || "—"}
               {fisio?.telefono ? ` · ${fisio.telefono}` : ""}
@@ -288,7 +292,7 @@ export default function FisioterapeutasPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
         <div>
           <h3>Listado</h3>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
+          <ul className="adj-list" style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12, fontSize: "var(--list-font-size)", }}>
             {loading && <li className="text-[var(--muted)]">Cargando…</li>}
             {!loading && list.length === 0 && <li className="text-[var(--muted)]">No hay fisioterapeutas registrados.</li>}
             {!loading &&

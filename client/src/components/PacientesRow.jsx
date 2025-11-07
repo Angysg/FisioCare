@@ -12,10 +12,12 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                 margin: 0,
                 borderRadius: 12,
                 background: "var(--panel)",
-                border: "1px solid var(--border)",
+                border: `1px solid ${isOpen
+                    ? "color-mix(in srgb, var(--link) 28%, var(--border))"
+                    : "var(--border)"}`,
                 transition: "box-shadow 200ms, border-color 200ms",
                 boxShadow: isOpen
-                    ? "0 0 0 2px color-mix(in oklab, var(--link) 45%, transparent)"
+                    ? "0 0 0 1.5px color-mix(in srgb, var(--link) 24%, transparent)"
                     : "0 1px 8px rgba(0,0,0,0.06)",
             }}
         >
@@ -37,17 +39,17 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                 }}
             >
                 <div>
-                    <div className="name" style={{ fontWeight: 600 }}>
+                    <div className="title" style={{ fontWeight: 600, fontSize: "var(--list-title-size)" }}>
                         {paciente.nombre} {paciente.apellidos}
                     </div>
-                    <div className="meta" style={{ color: "var(--muted)", fontSize: 14 }}>
+                    <div className="meta" style={{ color: "var(--muted)",fontSize: "calc(var(--list-font-size) * 0.95)" }}>
                         {paciente.email} · {paciente.telefono || "—"}
                     </div>
                 </div>
 
                 <span
                     style={{
-                        fontSize: 14,
+                        fontSize: "calc(var(--list-font-size) * 0.95)",
                         fontWeight: 500,
                         color: "var(--link)",
                         userSelect: "none",
@@ -68,7 +70,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                 <div ref={wrapRef}>
                     <div
                         className="detalle"
-                        style={{ padding: "0 14px 14px 14px", fontSize: 14 }}
+                        style={{ padding: "0 14px 14px 14px", fontSize: "calc(var(--list-font-size) * 0.90)"  }}
                     >
                         {/* Antecedentes */}
                         <div style={{ marginTop: 6, marginBottom: 12 }}>

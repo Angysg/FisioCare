@@ -142,15 +142,30 @@ function SeguimientoRow({ item, isOpen, onToggle, onEdit, onDelete }) {
           gap: 8,
         }}
       >
-        <div>
-          <div style={{ fontWeight: 700, color: "var(--text)", fontSize: 16 }}>
-            {nombrePaciente}
-          </div>
-          <div style={{ color: "var(--muted)", fontSize: 13 }}>
-            {fechaStr} · {nombreFisio}
-            {item.primeraConsulta ? " · Primera consulta" : ""}
-          </div>
-        </div>
+       <div>
+  <div
+    className="title"
+    style={{
+      fontWeight: 600,
+      color: "var(--text)",
+      fontSize: "calc(var(--list-title-size) * 1.)", // ← un 15% más grande
+      lineHeight: 1.3,
+    }}
+  >
+    {nombrePaciente}
+  </div>
+  <div
+    style={{
+      color: "var(--muted)",
+      fontSize: "calc(var(--list-font-size) * 0.80)", // ← antes 13px
+      lineHeight: 1.4,
+    }}
+  >
+    {fechaStr} · {nombreFisio}
+    {item.primeraConsulta ? " · Primera consulta" : ""}
+  </div>
+</div>
+
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 500, color: "var(--link)", userSelect: "none" }}>
@@ -165,12 +180,12 @@ function SeguimientoRow({ item, isOpen, onToggle, onEdit, onDelete }) {
 
       <div style={{ height: h, overflow: "hidden", transition: "height 300ms" }}>
         <div ref={wrapRef}>
-          <div style={{ padding: "0 14px 14px 14px", fontSize: 14 }}>
+          <div style={{  padding: "0 14px 14px 14px",  fontSize: "calc(var(--list-font-size) * 0.90)", }}>
             <div style={{ fontWeight: 600, marginBottom: 6 }}>Zonas del cuerpo</div>
             {Array.isArray(item.bodyZones) && item.bodyZones.length > 0
               ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {item.bodyZones.map(z => (
-                  <span key={z} style={{ fontSize: 12, padding: "2px 6px", border: "1px solid var(--border)", borderRadius: 6 }}>
+                  <span key={z} style={{ fontSize: 15, padding: "4px 10px", border: "1px solid var(--border)", borderRadius: 6 }}>
                     {String(z).replaceAll("_", " ")}
                   </span>
                 ))}
@@ -347,12 +362,14 @@ export default function Seguimientos() {
           {/* Listado */}
           <h3>Listado</h3>
           <ul
+            className="adj-list"
             style={{
               listStyle: "none",
               padding: 0,
               margin: 0,
               display: "grid",
               gap: 12,
+               fontSize: "var(--list-font-size)",
             }}
           >
             {list.map((it) => {
@@ -412,29 +429,29 @@ export default function Seguimientos() {
             </div>
 
             {/* PRIMERA CONSULTA (una sola línea) */}
-<div className="form-field" style={{ marginTop: 6 }}>
-  <label
-    htmlFor="primeraConsulta"
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      margin: 0,
-      fontWeight: 400,
-      whiteSpace: "nowrap",   // <- evita salto de línea
-      cursor: "pointer",
-    }}
-  >
-    <input
-      id="primeraConsulta"
-      type="checkbox"
-      checked={!!form.primeraConsulta}
-      onChange={(e) => setForm({ ...form, primeraConsulta: e.target.checked })}
-      style={{ margin: 0 }}
-    />
-    ¿Primera consulta?
-  </label>
-</div>
+            <div className="form-field" style={{ marginTop: 6 }}>
+              <label
+                htmlFor="primeraConsulta"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  margin: 0,
+                  fontWeight: 400,
+                  whiteSpace: "nowrap",   // <- evita salto de línea
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  id="primeraConsulta"
+                  type="checkbox"
+                  checked={!!form.primeraConsulta}
+                  onChange={(e) => setForm({ ...form, primeraConsulta: e.target.checked })}
+                  style={{ margin: 0 }}
+                />
+                ¿Primera consulta?
+              </label>
+            </div>
 
 
             {/* Zonas del cuerpo */}
@@ -446,7 +463,7 @@ export default function Seguimientos() {
               <BodyZonesSelect
                 value={form.bodyZones || []}
                 onChange={(v) => setForm({ ...form, bodyZones: v })}
-              
+
               // title={null}
               />
             </div>

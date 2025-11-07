@@ -10,6 +10,13 @@
   --link: #60a5fa;
   --link-hover: #93c5fd;
 
+  /* ===== Tamaños globales de LISTADOS ===== */
+  --list-font-size: 18px;       /* tamaño base de fila */
+  --list-title-size: 18px;      /* tamaño para el nombre/título */
+ --list-detail-boost: 0px;    /* escala del contenido expandido (.detalle) respecto al base */
+  --list-row-padding-y: 14px;   /* aire vertical de cada tarjeta */
+  --list-row-padding-x: 16px;   /* aire horizontal de cada tarjeta */
+
   /* Panels / list items */
   --panel: rgba(255, 255, 255, 0.05);
   --panel-hover: rgba(255, 255, 255, 0.08);
@@ -108,10 +115,7 @@ body.dark {
 /* =========================
    Base
    ========================= */
-html, body, #root {
-  height: 100%;
-  margin: 0;
-}
+html, body, #root { height: 100%; margin: 0; }
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -121,17 +125,11 @@ body {
 }
 
 /* Contenedor general */
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px;
-}
+.container { max-width: 1100px; margin: 0 auto; padding: 20px; }
 
 /* Header */
 header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  position: sticky; top: 0; z-index: 10;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
@@ -163,40 +161,20 @@ nav a.active {
   text-shadow: var(--title-shadow);
 }
 
-.sec-title {
-  font-size: 1.125rem; /* text-lg */
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 .75rem 0;
-}
-
-/* Variante un poco más grande para títulos de sección */
-.sec-title--big {
-  font-size: 1.25rem;   /* ~20px */
-  line-height: 1.35;
-}
+.sec-title { font-size: 1.125rem; font-weight: 700; color: var(--text); margin: 0 0 .75rem 0; }
+.sec-title--big { font-size: 1.25rem; line-height: 1.35; }
 
 /* =========================
    Card simple
    ========================= */
-.card {
-  background: var(--card-bg);
-  border-radius: 1rem;
-  box-shadow: var(--card-shadow);
-  padding: 1.5rem;
-}
+.card { background: var(--card-bg); border-radius: 1rem; box-shadow: var(--card-shadow); padding: 1.5rem; }
 
 /* =========================
    Formularios
    ========================= */
 .form-field { margin-bottom: .9rem; }
 
-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: .35rem;
-  color: var(--text);
-}
+label { display: block; font-weight: 600; margin-bottom: .35rem; color: var(--text); }
 
 input, select, textarea, button {
   font: inherit;
@@ -204,7 +182,6 @@ input, select, textarea, button {
   border: 1px solid var(--border);
   box-sizing: border-box;
 }
-
 input, select, textarea {
   color: var(--input-text);
   background: var(--input-bg);
@@ -212,15 +189,12 @@ input, select, textarea {
   width: 100%;
   transition: border-color .2s ease, box-shadow .2s ease;
 }
-
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: .9; }
-
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: rgba(59,130,246,.45);
   box-shadow: 0 0 0 3px rgba(59,130,246,.15);
 }
-
 textarea { min-height: 110px; resize: vertical; line-height: 1.4; }
 
 /* =========================
@@ -259,11 +233,7 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
 /* =========================
    Home (tarjetas navegación)
    ========================= */
-.grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .nav-card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -275,7 +245,7 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
 .nav-card:hover { background: var(--panel-hover); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
 .nav-card h3 { margin: .5rem 0; }
 
-/* ====== LISTADO PACIENTES ====== */
+/* ====== LISTADO PACIENTES (id legado) ====== */
 #listaPacientes { display: grid; gap: 12px; }
 #listaPacientes .pac-item {
   background: var(--panel);
@@ -317,137 +287,115 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
 .vacaciones-page .form-card { margin-bottom: 12px !important; }
 .vacaciones-page .filter-card { margin-top: 10px !important; margin-bottom: 12px !important; }
 .vacaciones-page .calendar-block { margin-top: 16px !important; }
-
-/* Botón del filtro mobile spacing (si lo usas) */
 .vacaciones-page .only-mine-btn { margin-top: 8px; }
 @media (min-width: 768px) {
   .vacaciones-page .only-mine-btn { margin-top: 0; }
 }
-
-/* Calendario (react-big-calendar) compacto */
-.vacaciones-page .vac-calendar .rbc-toolbar {
-  gap: 6px; flex-wrap: wrap; margin-bottom: 10px !important;
-}
+.vacaciones-page .vac-calendar .rbc-toolbar { gap: 6px; flex-wrap: wrap; margin-bottom: 10px !important; }
 .vacaciones-page .vac-calendar .rbc-toolbar .rbc-btn-group button { margin-right: 4px; }
-
-/* (dedupe) – evita reglas repetidas */
 .vacaciones-page .vac-form .actions { margin-top: 16px; }
-
-/* Grid filtro vacaciones (por si se usa en otras vistas) */
-.vacaciones-page .filter-grid {
-  display: grid; grid-template-columns: 1fr; gap: 12px;
-}
+.vacaciones-page .filter-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
 @media (min-width: 768px) {
   .vacaciones-page .filter-grid { grid-template-columns: 1fr auto; align-items: end; }
 }
+.vacaciones-page .vac-calendar > h2 + :not(.rbc-calendar) { display: none !important; }
 
+/* Badges */
+.badge { display: inline-block; padding: 3px 8px; font-size: 12px; font-weight: 700; border-radius: 999px; border: 1px solid var(--border); }
+.badge--pending { background: color-mix(in srgb, #fbbf24 20%, transparent); color: #92400e; border-color: color-mix(in srgb, #f59e0b 50%, transparent); }
+.badge--approved { background: color-mix(in srgb, #34d399 22%, transparent); color: #065f46; border-color: color-mix(in srgb, #10b981 50%, transparent); }
+.badge--rejected { background: color-mix(in srgb, #f87171 20%, transparent); color: #7f1d1d; border-color: color-mix(in srgb, #ef4444 50%, transparent); }
 
-/* Oculta cualquier etiqueta suelta (p/span/div) entre el h2 y el calendario en esta vista */
-.vacaciones-page .vac-calendar > h2 + :not(.rbc-calendar) {
-  display: none !important;
-}
-
-/* Badges de estado solicitudes (Pendiente / Aprobada / Rechazada) */
-.badge {
-  display: inline-block;
-  padding: 3px 8px;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-}
-.badge--pending {
-  background: color-mix(in srgb, #fbbf24 20%, transparent);
-  color: #92400e;
-  border-color: color-mix(in srgb, #f59e0b 50%, transparent);
-}
-.badge--approved {
-  background: color-mix(in srgb, #34d399 22%, transparent);
-  color: #065f46;
-  border-color: color-mix(in srgb, #10b981 50%, transparent);
-}
-.badge--rejected {
-  background: color-mix(in srgb, #f87171 20%, transparent);
-  color: #7f1d1d;
-  border-color: color-mix(in srgb, #ef4444 50%, transparent);
-}
-
-/* ===== Botón suave (mismo estilo que "Editar / Eliminar" de Pacientes) ===== */
+/* ===== Botón suave genérico ===== */
 .btn-soft {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 1;
-  user-select: none;
-  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 6px 12px; border-radius: 8px;
+  font-size: 14px; line-height: 1; user-select: none; cursor: pointer;
   border: 1px solid color-mix(in srgb, var(--link) 45%, transparent);
   background: color-mix(in srgb, var(--link) 6%, transparent);
-  color: var(--link);
-  transition: background .25s, box-shadow .25s;
+  color: var(--link); transition: background .25s, box-shadow .25s;
 }
-.btn-soft:hover {
-  background: color-mix(in srgb, var(--link) 15%, transparent);
-}
-.btn-soft:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent);
-}
+.btn-soft:hover { background: color-mix(in srgb, var(--link) 15%, transparent); }
+.btn-soft:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent); }
+.btn-soft--danger { color: #b91c1c; border-color: rgba(185, 28, 28, 0.35); background: rgba(185, 28, 28, 0.05); }
+.btn-soft--danger:hover { background: rgba(185, 28, 28, 0.12); }
+.btn-soft--danger:focus-visible { box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.25); }
 
-/* Variante peligro (como "Eliminar") */
-.btn-soft--danger {
-  color: #b91c1c;
-  border-color: rgba(185, 28, 28, 0.35);
-  background: rgba(185, 28, 28, 0.05);
-}
-.btn-soft--danger:hover {
-  background: rgba(185, 28, 28, 0.12);
-}
-.btn-soft--danger:focus-visible {
-  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.25);
-}
-
-/* Acciones en celdas de tabla: separa botones */
-.table-actions {
-  display: inline-flex;
-  gap: 8px;
-}
-
-/* Margen superior del botón submit dentro del wrapper del formulario de admin */
-.vac-form button[type="submit"] {
-  margin-top: 10px;
-}
-
-
+.table-actions { display: inline-flex; gap: 8px; }
+.vac-form button[type="submit"] { margin-top: 10px; }
 .vacaciones-page .calendar-block { margin-top: 28px !important; }
 
-
 /* Evitar que las zonas del cuerpo se rompan letra a letra */
-.zones-grid span,
-label span {
+.zones-grid span, label span {
   word-break: normal !important;
   overflow-wrap: normal !important;
   white-space: nowrap !important;
 }
 
-
-
 /* Acordeones de BodyZonesSelect */
 .form-field details > summary::-webkit-details-marker { display: none; }
 .form-field details[open] > summary span[aria-hidden] { transform: rotate(180deg); }
+.form-field details, .form-field summary { background: transparent !important; border: none !important; box-shadow: none !important; }
+.form-field details { background: var(--panel) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }
 
-/* Evitar que estilos globales de input afecten a summary/details */
-.form-field details,
-.form-field summary {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+/* =========================
+   LISTAS UNIFICADAS (.adj-list)
+   ========================= */
+
+/* 1) Wrapper de lista: define tamaño global */
+.adj-list {
+  font-size: var(--list-font-size);
 }
-.form-field details {
-  background: var(--panel) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
+
+/* 2) Filas: padding y estilo uniforme */
+.adj-list > li {
+  padding: var(--list-row-padding-y) var(--list-row-padding-x);
+  background: var(--panel);
+  border-radius: 12px;
+  transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.adj-list > li:hover {
+  background: var(--panel-hover);
+}
+
+/* 3) Cabecera (el botón clicable del acordeón) */
+.adj-list > li > button {
+  font-size: inherit !important;   /* hereda tamaño de lista */
+  color: var(--text) !important;   /* evita texto blanco global */
+  background: transparent;
+  border: none;
+  outline: none;
+  transition: box-shadow .2s ease, background .2s ease;
+}
+
+/* 4) Enfocado accesible pero sutil */
+.adj-list > li > button:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 22%, transparent);
+  border-radius: 12px;
+}
+
+/* 5) Todo el contenido interno hereda color normal */
+.adj-list > li > button * {
+  color: inherit;
+}
+
+/* 6) Título / nombre principal */
+.adj-list .title {
+  font-size: var(--list-title-size);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* 7) Contenido expandido (detalle) */
+.adj-list .detalle {
+  font-size: calc(var(--list-font-size) * 0.90) !important;
+  line-height: 1.5;
+}
+
+/* 8) Textos secundarios del detalle */
+.adj-list .detalle .meta,
+.adj-list .detalle i {
+  font-size: 0.9em !important;
+  color: var(--muted);
 }

@@ -36,13 +36,16 @@ export async function list(req, res) {
 }
 
 // FEED PARA FULLCALENDAR
+// FEED PARA FULLCALENDAR
 export async function events(req, res) {
   try {
     const startD = parseQDate(req.query.start);
     const endD   = parseQDate(req.query.end);
     const { physio } = req.query;
 
-    if (!startD || !endD) return res.status(400).json({ message: 'start y end inválidos' });
+    if (!startD || !endD) {
+      return res.status(400).json({ message: 'start y end inválidos' });
+    }
 
     const q = { start: { $lt: endD }, end: { $gt: startD } };
     if (physio) q.physio = physio;
@@ -53,19 +56,25 @@ export async function events(req, res) {
       .lean();
 
     const events = apps.map(a => {
+      // título SIEMPRE seguro:
+      // 1) nombre del paciente poblado
+      // 2) patientName libre
+      // 3) fallback a título de la cita o 'Sesión'
       const pName = a.patient
         ? `${a.patient?.nombre ?? ''} ${a.patient?.apellidos ?? ''}`.trim()
         : (a.patientName || '');
+      const safeTitle = (pName || a.title || 'Sesión').trim();
+
       return {
         id: String(a._id),
-        title: pName || a.title || 'Cita',
+        title: safeTitle,                // <<< nunca vacío
         start: a.start,
         end: a.end,
         extendedProps: {
-          physioId: a.physio?._id,
-          physioName:  `${a.physio?.nombre ?? ''} ${a.physio?.apellidos ?? ''}`.trim(),
+          physioId: a.physio?._id || a.physio,
+          physioName: `${a.physio?.nombre ?? ''} ${a.physio?.apellidos ?? ''}`.trim(),
           patientId: a.patient?._id || null,
-          patientName: pName,
+          patientName: pName || null,
           notes: a.notes || '',
         }
       };
