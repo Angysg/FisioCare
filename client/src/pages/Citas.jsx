@@ -271,7 +271,7 @@ export default function Citas() {
   return (
     <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 24 }}>
       <div>
-        <h1 style={{ marginBottom: 12 }}>Citas</h1>
+        <h1 className="page-title">CITAS</h1>
 
         {/* Selector de fisio (sin "Todos") */}
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>

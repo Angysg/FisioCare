@@ -1,9 +1,17 @@
 import { Link } from "react-router-dom";
 import { getUser } from "../auth";
 
+function normalizeRole(s) {
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 export default function Dashboard() {
   const user = getUser();
-  const role = user?.role || user?.rol || user?.tipo || "";
+  const roleRaw = user?.role || user?.rol || user?.tipo || "";
+  const role = normalizeRole(roleRaw);
 
   const comunes = [
     { title: "Pacientes", to: "/pacientes", desc: "Gestión de fichas" },
@@ -23,11 +31,24 @@ export default function Dashboard() {
       to: "/fisioterapeutas",
       desc: "Altas, permisos y roles",
     },
-    { title: "Analítica de dolencias", to: "/analitica-dolencias", desc: "Zonas más tratadas" }
-
+    {
+      title: "Analítica de dolencias",
+      to: "/analitica-dolencias",
+      desc: "Zonas más tratadas",
+    },
   ];
 
-  const cards = role === "admin" ? [...comunes, ...adminOnly] : comunes;
+  // Recepción: solo dos tarjetas (Pacientes y Citas)
+  const receptionCards = comunes.filter((c) =>
+    ["Pacientes", "Citas"].includes(c.title)
+  );
+
+  const cards =
+    role === "recepcion"
+      ? receptionCards
+      : role === "admin"
+      ? [...comunes, ...adminOnly]
+      : comunes;
 
   return (
     <main className="container">

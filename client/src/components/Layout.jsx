@@ -3,10 +3,18 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import { getUser, logout } from "../auth";
 
+function normalizeRole(s) {
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // quita tildes
+}
+
 export default function Layout() {
   // guardamos el usuario logado localmente
   const [user, setUser] = useState(() => getUser());
-  const role = (user?.role || user?.rol || user?.tipo || "").toLowerCase();
+  const roleRaw = user?.role || user?.rol || user?.tipo || "";
+  const role = normalizeRole(roleRaw);
 
   useEffect(() => {
     const u = getUser();
@@ -28,7 +36,13 @@ export default function Layout() {
       ? [{ to: "/fisioterapeutas", label: "Fisioterapeutas" }]
       : [];
 
-  const links = [...baseLinks, ...adminLinks];
+  // Recepción: mostrar SIEMPRE Inicio + Pacientes + Citas
+  const links =
+    role === "recepcion"
+      ? baseLinks.filter((l) =>
+          ["/dashboard", "/pacientes", "/citas"].includes(l.to)
+        )
+      : [...baseLinks, ...adminLinks];
 
   // estilos reutilizables
   const userChipStyle = {
@@ -110,9 +124,7 @@ export default function Layout() {
               <NavLink
                 key={l.to}
                 to={l.to}
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
-                }
+                className={({ isActive }) => (isActive ? "active" : "")}
                 style={{
                   fontSize: "0.95rem",
                   lineHeight: 1.2,
@@ -139,8 +151,7 @@ export default function Layout() {
           >
             {user && (
               <span style={userChipStyle}>
-                {user.nombre || user.name}{" "}
-                {role ? `(${role})` : ""}
+                {user.nombre || user.name} {roleRaw ? `(${roleRaw})` : ""}
               </span>
             )}
 
