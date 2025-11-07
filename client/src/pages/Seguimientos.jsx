@@ -446,7 +446,7 @@ export default function Seguimientos() {
               <BodyZonesSelect
                 value={form.bodyZones || []}
                 onChange={(v) => setForm({ ...form, bodyZones: v })}
-                defaultOpen="Tronco"
+              
               // title={null}
               />
             </div>

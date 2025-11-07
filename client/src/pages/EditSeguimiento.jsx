@@ -1,24 +1,25 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { apiGetSeguimiento, apiUpdateSeguimiento, apiListFisioterapeutasSimple } from "../api";
+import BodyZonesSelect from "../components/appointments/BodyZonesSelect.jsx";
 
 function Btn({ variant = "primary", children, disabled, onClick, type = "button" }) {
   const palette =
     variant === "secondary"
       ? {
-          color: "var(--link)",
-          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-          bg: "color-mix(in srgb, var(--link) 8%, transparent)",
-          bgHover: "color-mix(in srgb, var(--link) 16%, transparent)",
-          focus: "0 0 0 3px color-mix(in srgb, var(--link) 32%, transparent)",
-        }
+        color: "var(--link)",
+        border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+        bg: "color-mix(in srgb, var(--link) 8%, transparent)",
+        bgHover: "color-mix(in srgb, var(--link) 16%, transparent)",
+        focus: "0 0 0 3px color-mix(in srgb, var(--link) 32%, transparent)",
+      }
       : {
-          color: "white",
-          border: "1px solid color-mix(in srgb, var(--link) 55%, black 0%)",
-          bg: "color-mix(in srgb, var(--link) 72%, black 0%)",
-          bgHover: "color-mix(in srgb, var(--link) 84%, black 0%)",
-          focus: "0 0 0 3px color-mix(in srgb, var(--link) 40%, transparent)",
-        };
+        color: "white",
+        border: "1px solid color-mix(in srgb, var(--link) 55%, black 0%)",
+        bg: "color-mix(in srgb, var(--link) 72%, black 0%)",
+        bgHover: "color-mix(in srgb, var(--link) 84%, black 0%)",
+        focus: "0 0 0 3px color-mix(in srgb, var(--link) 40%, transparent)",
+      };
 
   const base = {
     display: "inline-flex",
@@ -67,7 +68,9 @@ export default function EditSeguimiento() {
     pacienteNombre: "",
     fisioId: "",
     fecha: "",
+    primeraConsulta: false,
     comentario: "",
+    bodyZones: [],
   });
 
   const [loading, setLoading] = useState(true);
@@ -77,12 +80,16 @@ export default function EditSeguimiento() {
     (async () => {
       try {
         const s = await apiGetSeguimiento(id);
-        const nombreDesdeRef = s?.paciente ? `${s.paciente?.nombre || ""} ${s.paciente?.apellidos || ""}`.trim() : "";
+        const nombreDesdeRef = s?.paciente
+          ? `${s.paciente?.nombre || ""} ${s.paciente?.apellidos || ""}`.trim()
+          : "";
         setForm({
           pacienteNombre: s?.pacienteNombre || nombreDesdeRef || "",
           fisioId: s.fisio?._id || "",
           fecha: s.fecha ? new Date(s.fecha).toISOString().slice(0, 10) : "",
           comentario: s.comentario || "",
+          primeraConsulta: false, // tal y como pediste
+          bodyZones: Array.isArray(s.bodyZones) ? s.bodyZones : [],
         });
         const fs = await apiListFisioterapeutasSimple();
         setFisios(fs || []);
@@ -106,6 +113,8 @@ export default function EditSeguimiento() {
         fisioId: form.fisioId,
         fecha: form.fecha || null,
         comentario: form.comentario,
+        primeraConsulta: !!form.primeraConsulta,
+        bodyZones: form.bodyZones || [],
       });
       alert("Seguimiento actualizado");
       navigate("/seguimientos");
@@ -120,7 +129,7 @@ export default function EditSeguimiento() {
   if (loading) return <div style={{ padding: 24 }}>Cargando...</div>;
 
   const field = { display: "grid", gap: 6 };
-  const label = { fontSize: 14, fontWeight: 600 };
+  const label = { fontSize: 16, fontWeight: 700, color: "var(--text)" };
   const input = {
     border: "1px solid var(--border)",
     background: "var(--surface, #fff)",
@@ -128,20 +137,35 @@ export default function EditSeguimiento() {
     padding: "10px 12px",
     borderRadius: 10,
     outline: "none",
+    fontSize: 15,
   };
 
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-        <h1 className="page-title" style={{ margin: 0 }}>Editar seguimiento</h1>
-        <Link to="/seguimientos" className="text-sm" style={{ textDecoration: "underline", color: "var(--link)", fontWeight: 600 }}>
+      {/* Cabecera con el mismo estilo/ color que el resto de H1 */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 24,
+        }}
+      >
+        <h1 className="page-title" style={{ margin: 0 }}>
+          EDITAR SEGUIMIENTO
+        </h1>
+        <Link
+          to="/seguimientos"
+          className="text-sm"
+          style={{ textDecoration: "underline", color: "var(--link)", fontWeight: 600 }}
+        >
           Volver
         </Link>
       </div>
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
+      <form onSubmit={onSubmit} style={{ display: "grid", gap: 24 }}>
         <div style={field}>
-          <label style={label}>Paciente (texto libre)</label>
+          <label style={label}>Paciente</label>
           <input
             placeholder="Nombre y apellidos…"
             value={form.pacienteNombre}
@@ -168,12 +192,46 @@ export default function EditSeguimiento() {
             style={input}
           >
             <option value="">Selecciona…</option>
-            {fisios.map(f => (
+            {fisios.map((f) => (
               <option key={f._id} value={f._id}>
                 {f.nombre} {f.apellidos || ""}
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="form-field" style={{ marginTop: 6 }}>
+          <label
+            htmlFor="primeraConsultaEdit"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              margin: 0,
+              fontWeight: 400,
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+            }}
+          >
+            <input
+              id="primeraConsultaEdit"
+              type="checkbox"
+              checked={!!form.primeraConsulta}
+              onChange={(e) =>
+                setForm((s) => ({ ...s, primeraConsulta: e.target.checked }))
+              }
+              style={{ margin: 0 }}
+            />
+            ¿Primera consulta?
+          </label>
+        </div>
+
+        <div style={{ display: "grid", gap: 6 }}>
+          <label style={label}>Zonas del cuerpo</label>
+          <BodyZonesSelect
+            value={form.bodyZones}
+            onChange={(v) => setForm((s) => ({ ...s, bodyZones: v }))}
+          />
         </div>
 
         <div style={field}>
@@ -186,13 +244,23 @@ export default function EditSeguimiento() {
           />
         </div>
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "flex-end",
+            marginTop: 12,
+          }}
+        >
           <Link to="/seguimientos" style={{ textDecoration: "none" }}>
             <Btn variant="secondary">Cancelar</Btn>
           </Link>
-          <Btn type="submit" disabled={saving}>{saving ? "Guardando..." : "Guardar cambios"}</Btn>
+          <Btn type="submit" disabled={saving}>
+            {saving ? "Guardando..." : "Guardar cambios"}
+          </Btn>
         </div>
       </form>
+
     </div>
   );
 }

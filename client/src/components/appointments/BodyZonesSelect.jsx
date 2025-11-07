@@ -1,36 +1,90 @@
 // client/src/components/appointments/BodyZonesSelect.jsx
 import { useMemo } from "react";
+import BODY_ZONES from "../../constants/bodyZones.js";
 
+/** Grupos usando los valores exactos del enum (snake_case) */
 const GROUPS = {
   "Cabeza y cuello": [
-    "cabeza","art temporomandibular","cara","cuello","columna cervical",
+    "cabeza",
+    "articulacion_temporomandibular",
+    "cara",
+    "cuello_columna_cervical",
   ],
   "Tronco": [
-    "columna dorsal","columna lumbar","torax dcho","torax izq","abdomen","pelvis",
+    "columna_dorsal",
+    "columna_lumbar",
+    "torax_pecho_dcho",
+    "torax_pecho_izq",
+    "abdomen",
+    "pelvis",
   ],
   "Miembro superior (MMSS)": [
-    "hombro dcho","hombro izq","brazo sup ant dcho","brazo sup pos dcho",
-    "brazo sup ant izq","brazo sup pos izq","antebrazo dcho","antebrazo izq",
-    "codo dcho","codo izq","muñeca dcha","muñeca izq","dedos manos",
+    "hombro_dcho",
+    "hombro_izq",
+    "brazo_sup_ant_dcho",
+    "brazo_sup_pos_dcho",
+    "brazo_sup_ant_izq",
+    "brazo_sup_pos_izq",
+    "antebrazo_dcho",
+    "antebrazo_izq",
+    "codo_dcho",
+    "codo_izq",
+    "muneca_dcha",
+    "muneca_izq",
+    "dedos_manos",
   ],
   "Miembro inferior (MMII)": [
-    "ingle dcha","ingle izq","cadera dcha","cadera izq","gluteo dcho","gluteo izq",
-    "pierna sup pos dcha","pierna sup ant dcha","pierna sup pos izq","pierna sup ant izq",
-    "pierna inf dcha","pierna inf izq","rodilla dcha","rodilla izq",
-    "tobillo dcho","tobillo izq","pie dcho","pie izq","dedos pies",
+    "ingle_dcha",
+    "ingle_izq",
+    "cadera_dcha",
+    "cadera_izq",
+    "gluteo_dcho",
+    "gluteo_izq",
+    "pierna_sup_pos_dcha",
+    "pierna_sup_ant_dcha",
+    "pierna_sup_pos_izq",
+    "pierna_sup_ant_izq",
+    "pierna_inf_dcha",
+    "pierna_inf_izq",
+    "rodilla_dcha",
+    "rodilla_izq",
+    "tobillo_dcho",
+    "tobillo_izq",
+    "pie_dcho",
+    "pie_izq",
+    "dedos_pies",
   ],
 };
+
+/** Plantillas de columnas por grupo */
+const GRID_TEMPLATES = {
+  "Cabeza y cuello": "repeat(2, minmax(220px, 1fr))", // 2 columnas fijas (2+2)
+};
+
+/** Etiqueta visible a partir de snake_case */
+function labelFor(z) {
+  let s = String(z).replaceAll("_", " ");
+  s = s.replace(/\bmuneca\b/gi, "muñeca");
+  s = s.replace(/\barticulacion\b/gi, "articulación");
+  s = s.replace(/\btorax\b/gi, "tórax");
+  return s;
+}
 
 export default function BodyZonesSelect({
   value = [],
   onChange,
   title = null,
-  defaultOpen = "Tronco",
+  defaultOpen = null, // todo cerrado por defecto
 }) {
+  const safeValue = useMemo(
+    () => (Array.isArray(value) ? value.filter((z) => BODY_ZONES.includes(z)) : []),
+    [value]
+  );
+
   const groups = useMemo(() => Object.entries(GROUPS), []);
 
   const toggle = (zone) => {
-    const s = new Set(value);
+    const s = new Set(safeValue);
     s.has(zone) ? s.delete(zone) : s.add(zone);
     onChange(Array.from(s));
   };
@@ -42,7 +96,7 @@ export default function BodyZonesSelect({
       {groups.map(([group, zones]) => (
         <details
           key={group}
-          open={group === defaultOpen}
+          open={defaultOpen ? (group === defaultOpen) : undefined}
           style={{
             background: "var(--panel)",
             border: "1px solid var(--border)",
@@ -62,20 +116,18 @@ export default function BodyZonesSelect({
               fontWeight: 500,
               background: "transparent",
               border: "none",
-              boxShadow: "none",
-              outline: "none",
             }}
           >
             <span>{group}</span>
             <span aria-hidden style={{ fontSize: 12, opacity: 0.7 }}>▾</span>
           </summary>
 
-          {/* ======== BLOQUE CAMBIADO: rejilla estable y cada opción con 2 columnas ======== */}
           <div
             style={{
               padding: "8px 12px 12px",
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))",
+              gridTemplateColumns:
+                GRID_TEMPLATES[group] || "repeat(auto-fill, minmax(210px, 1fr))",
               gap: 10,
               alignItems: "start",
             }}
@@ -85,7 +137,7 @@ export default function BodyZonesSelect({
                 key={z}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "18px 1fr", // checkbox | texto
+                  gridTemplateColumns: "18px 1fr",
                   alignItems: "start",
                   columnGap: 8,
                   lineHeight: 1.25,
@@ -94,7 +146,7 @@ export default function BodyZonesSelect({
               >
                 <input
                   type="checkbox"
-                  checked={value.includes(z)}
+                  checked={safeValue.includes(z)}
                   onChange={() => toggle(z)}
                   style={{ width: 16, height: 16, marginTop: 2 }}
                 />
@@ -105,12 +157,11 @@ export default function BodyZonesSelect({
                     overflowWrap: "anywhere",
                   }}
                 >
-                  {z.replaceAll("_", " ")}
+                  {labelFor(z)}
                 </span>
               </label>
             ))}
           </div>
-          {/* ========================================================================= */}
         </details>
       ))}
     </div>
