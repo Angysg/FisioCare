@@ -37,7 +37,7 @@ export default function Layout() {
   const adminLinks = isAdmin
     ? [
         { to: "/fisioterapeutas", label: "Fisioterapeutas" },
-        { to: "/analitica-dolencias", label: "Analítica" }, // ✅ nuevo enlace
+        { to: "/analitica-dolencias", label: "Gráficos" }, // ✅ nuevo enlace
       ]
     : [];
 

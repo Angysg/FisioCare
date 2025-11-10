@@ -6,7 +6,6 @@ import VacationsList from "../components/vacations/VacationsList.jsx";
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-
 import {
   apiListVacations,
   apiListFisioterapeutasSimple,
@@ -17,6 +16,57 @@ import {
 } from "../api";
 
 import { getUser } from "../auth";
+
+/* ===================== días laborables ===================== */
+// Añade aquí tus festivos (nacionales + locales). Formato YYYY-MM-DD.
+const HOLIDAYS_2025 = new Set([
+  "2025-01-01", // Año Nuevo
+  "2025-01-06", // Reyes
+  "2025-05-01", // Día del Trabajo
+  "2025-08-15", // Asunción
+  "2025-10-12", // Fiesta Nacional
+  "2025-11-01", // Todos los Santos
+  "2025-12-06", // Constitución
+  "2025-12-08", // Inmaculada
+  "2025-12-25", // Navidad
+]);
+
+function toISO(d) {
+  const date = (d instanceof Date) ? d : new Date(d);
+  // normalizamos a UTC para evitar problemas de huso al serializar
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function countWorkingDays(startDate, endDate, holidays = HOLIDAYS_2025, weekend = new Set([0, 6])) {
+  if (!startDate || !endDate) return 0;
+  const s0 = new Date(startDate);
+  const e0 = new Date(endDate);
+  const s = new Date(s0.getFullYear(), s0.getMonth(), s0.getDate());
+  const e = new Date(e0.getFullYear(), e0.getMonth(), e0.getDate());
+
+  let count = 0;
+  for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+    const day = d.getDay();            // 0 domingo, 6 sábado
+    const iso = toISO(d);              // YYYY-MM-DD
+    if (!weekend.has(day) && !holidays.has(iso)) count++;
+  }
+  return count;
+}
+
+function totalsByPerson(vacaciones, holidays = HOLIDAYS_2025) {
+  const totals = {};
+  for (const v of (vacaciones || [])) {
+    const name =
+      (v?.fisio?.nombre || v?.fisioName || v?.title || "Desconocido") +
+      (v?.fisio?.apellidos ? ` ${v.fisio.apellidos}` : "");
+    const days = countWorkingDays(v?.startDate, v?.endDate, holidays);
+    totals[name.trim() || "Desconocido"] = (totals[name.trim() || "Desconocido"] || 0) + days;
+  }
+  return totals;
+}
+/* =========================================================================== */
 
 function normalizeFisios(raw) {
   if (!raw) return [];
@@ -153,6 +203,9 @@ export default function Vacaciones() {
         ? `${v.fisio.nombre}${v.fisio.apellidos ? " " + v.fisio.apellidos : ""}`
         : v?.fisioName || undefined;
 
+      // NUEVO: añadimos workingDays al evento (útil para tooltips/listas)
+      const workingDays = countWorkingDays(v?.startDate, v?.endDate);
+
       return {
         id: v?._id,
         title: fisioName || v?.title || "Vacaciones",
@@ -161,6 +214,7 @@ export default function Vacaciones() {
         fisioId: v?.fisio?._id || v?.fisio || v?.fisioId,
         fisioName,
         color: v?.color || undefined,
+        workingDays,
       };
     });
   }, [items]);
@@ -171,6 +225,14 @@ export default function Vacaciones() {
     if (selectedFisioId === "ALL") return events;
     return events.filter((e) => (e.fisioId || "").toString() === selectedFisioId);
   }, [events, isAdmin, selectedFisioId]);
+
+  // NUEVO: totales por persona (globales y con filtro aplicado)
+  const totalsAll = useMemo(() => totalsByPerson(items), [items]);
+  const totalsFiltered = useMemo(() => {
+    if (!isAdmin || selectedFisioId === "ALL") return null;
+    const filtered = items.filter(v => (v?.fisio?._id || v?.fisio || v?.fisioId || "").toString() === selectedFisioId);
+    return totalsByPerson(filtered);
+  }, [items, isAdmin, selectedFisioId]);
 
   // enviar solicitud (fisio)
   async function submitRequest(e) {
@@ -243,7 +305,7 @@ export default function Vacaciones() {
               <table
                 style={{
                   width: "100%",
-                  fontSize: 14,
+                  fontSize: 16,
                   borderCollapse: "collapse",
                 }}
               >
@@ -324,7 +386,7 @@ export default function Vacaciones() {
               <table
                 style={{
                   width: "100%",
-                  fontSize: 14,
+                  fontSize: 16,
                   borderCollapse: "collapse",
                 }}
               >
@@ -372,7 +434,7 @@ export default function Vacaciones() {
             <form
               onSubmit={submitRequest}
               className="grid gap-4 md:grid-cols-4"
-              style={{ fontSize: 14 }}
+              style={{ fontSize: 16 }}
             >
               {/* Inicio */}
               <div className="flex flex-col">
@@ -424,10 +486,6 @@ export default function Vacaciones() {
                   {savingReq ? "Enviando..." : "Enviar solicitud"}
                 </button>
               </div>
-
-
-
-
             </form>
           </section>
         )}
@@ -437,7 +495,6 @@ export default function Vacaciones() {
       {/* ==== FILTRAR (admin, ancho completo) ==== */}
       {isAdmin && (
         <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6 mb-6">
-
           <h2 className="sec-title sec-title--big">Filtrar</h2>
           <div>
             <label className="block text-sm text-[var(--muted)] mb-1">
@@ -460,8 +517,7 @@ export default function Vacaciones() {
       )}
 
       {/* Calendario */}
-      <div className="calendar-block mt-8" style={{ marginBottom: 60 }}>
-
+      <div className="calendar-block mt-8" style={{ marginBottom: 24 }}>
         {errorVac && <p className="text-red-500">{errorVac}</p>}
         {loadingVac ? (
           <div className="rounded-2xl p-6 border bg-[var(--panel)] text-[var(--muted)]">
@@ -472,8 +528,57 @@ export default function Vacaciones() {
         )}
       </div>
 
+      {/* ===================== TOTALES (días laborables) ===================== */}
+      <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
+        <h2 className="sec-title sec-title--big">Totales por persona (días laborables)</h2>
+
+        {/* Subtotal cuando hay filtro activo */}
+        {isAdmin && selectedFisioId !== "ALL" && totalsFiltered && (
+          <div className="mb-3">
+            <div className="text-sm text-[var(--muted)] mb-1">Subtotal (filtro activo)</div>
+            <div style={{ display: "grid", gap: 6 }}>
+              {Object.entries(totalsFiltered).map(([name, total]) => (
+                <div
+                  key={`flt-${name}`}
+                  style={{ display: "flex", alignItems: "center", fontSize: 15 }}
+                >
+                  <span>{name}</span>
+                  <span style={{ opacity: 0.6, margin: "0 8px" }}>:</span> {/* ← cambia a "→" si quieres */}
+                  <span style={{ opacity: 0.9 }}><strong>{total}</strong> días</span>
+                </div>
+              ))}
+            </div>
+            <hr className="my-3" />
+          </div>
+        )}
+
+        {/* Totales globales */}
+        <div style={{ display: "grid", gap: 6 }}>
+          {Object.entries(totalsAll).map(([name, total]) => (
+            <div
+              key={name}
+              style={{ display: "flex", alignItems: "center", fontSize: 18 }}
+            >
+              <span>{name}</span>
+              <span style={{ opacity: 0.6, margin: "0 8px" }}>→</span> {/* cambia a "→" si prefieres */}
+              <span style={{ opacity: 0.9 }}><strong>{total}</strong> días</span>
+            </div>
+          ))}
+        </div>
+
+        {/*
+  <p className="mt-4 text-xs text-[var(--muted)]">
+    * El cálculo excluye sábados, domingos y festivos definidos en el archivo. Puedes
+    añadir/editar festivos en la constante <code>HOLIDAYS_2025</code>.
+  </p>
+  */}
+      </section>
+
+
       {/* Lista (vacaciones aprobadas) */}
-      <VacationsList reloadKey={reloadKey} />
+      <div style={{ marginTop: 50, marginBottom: 60 }}>
+        <VacationsList reloadKey={reloadKey} />
+      </div>
     </div>
   );
 }
