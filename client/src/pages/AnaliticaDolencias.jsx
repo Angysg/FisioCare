@@ -41,8 +41,8 @@ export default function AnaliticaDolencias() {
 
   // Colores consistentes para barras y porciones
   const colors = [
-    "#4c78a8","#f58518","#54a24b","#e45756","#72b7b2",
-    "#f2cf5b","#b279a2","#ff9da6","#9d755d","#bab0ac"
+    "#4c78a8", "#f58518", "#54a24b", "#e45756", "#72b7b2",
+    "#f2cf5b", "#b279a2", "#ff9da6", "#9d755d", "#bab0ac"
   ];
 
   // Datos con etiqueta legible
@@ -112,23 +112,41 @@ export default function AnaliticaDolencias() {
           </section>
 
           {/* ===== GRÁFICO CIRCULAR (Recharts) ===== */}
-          <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
+          <section
+            style={{
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 16,
+            }}
+          >
             <h3 style={{ marginTop: 0 }}>Circular</h3>
             {total === 0 ? (
               <p style={{ opacity: 0.7 }}>Sin datos.</p>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 420px) 1fr", gap: 16, alignItems: "center" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(280px, 420px) 1fr",
+                  gap: 16,
+                  alignItems: "center",
+                }}
+              >
+                {/* ==== Donut ==== */}
                 <div style={{ width: "100%", height: 340 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart margin={{ top: 16, right: 30, bottom: 16, left: 30 }}>
                       <Tooltip formatter={(v) => [`${v}`, "Casos"]} />
-                      <Legend />
+                      {/* ❌ Eliminamos <Legend /> */}
                       <Pie
                         data={dataPretty}
                         dataKey="count"
                         nameKey="label"
                         outerRadius={120}
-                        label={({ name, value }) => `${name} (${value})`}
+                        innerRadius={70}
+                        labelLine={false}
+                        label={({ value }) => value} // solo número dentro
                       >
                         {dataPretty.map((_, i) => (
                           <Cell key={`slice-${i}`} fill={colors[i % colors.length]} />
@@ -138,12 +156,37 @@ export default function AnaliticaDolencias() {
                   </ResponsiveContainer>
                 </div>
 
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
+                {/* ==== Leyenda personalizada ==== */}
+                <ul
+                  style={{
+                    listStyle: "none",
+                    margin: 0,
+                    padding: 0,
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
                   {dataPretty.map((d, i) => {
                     const pct = total ? Math.round((d.count * 100) / total) : 0;
                     return (
-                      <li key={d.zone} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ width: 12, height: 12, background: colors[i % colors.length], borderRadius: 2, display: "inline-block" }} />
+                      <li
+                        key={d.zone}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontSize: 14,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 12,
+                            height: 12,
+                            background: colors[i % colors.length],
+                            borderRadius: 2,
+                            display: "inline-block",
+                          }}
+                        />
                         <span style={{ flex: 1 }}>{d.label}</span>
                         <span style={{ opacity: 0.8 }}>{d.count} · {pct}%</span>
                       </li>
@@ -153,6 +196,7 @@ export default function AnaliticaDolencias() {
               </div>
             )}
           </section>
+
 
           {/* ===== TABLA ===== */}
           <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
