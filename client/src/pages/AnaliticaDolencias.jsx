@@ -1,20 +1,17 @@
+// client/src/pages/AnaliticaDolencias.jsx
 import { useEffect, useMemo, useState } from "react";
 import api from "../api";
 
-// Helpers para el pastel (SVG)
-function arcPath(cx, cy, r, startAngle, endAngle) {
-  const rad = (deg) => (deg * Math.PI) / 180;
-  const x1 = cx + r * Math.cos(rad(startAngle));
-  const y1 = cy + r * Math.sin(rad(startAngle));
-  const x2 = cx + r * Math.cos(rad(endAngle));
-  const y2 = cy + r * Math.sin(rad(endAngle));
-  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-  return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-}
+// Recharts
+import {
+  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  PieChart, Pie, Cell
+} from "recharts";
 
 export default function AnaliticaDolencias() {
   const [range, setRange] = useState("quarter"); // week | quarter | half
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]);          // [{ zone, count }]
   const [fromTo, setFromTo] = useState({ from: null, to: null });
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +20,8 @@ export default function AnaliticaDolencias() {
     try {
       const res = await api.get(`/api/analytics/body-zones?range=${rg}`);
       const payload = res.data || {};
-      setData((payload.data || []).sort((a, b) => b.count - a.count));
+      const rows = (payload.data || []).sort((a, b) => b.count - a.count);
+      setData(rows);
       setFromTo({ from: payload.from, to: payload.to });
     } catch (e) {
       console.error(e);
@@ -40,16 +38,18 @@ export default function AnaliticaDolencias() {
     () => data.reduce((s, d) => s + (d.count || 0), 0),
     [data]
   );
-  const maxCount = useMemo(
-    () => data.reduce((m, d) => Math.max(m, d.count || 0), 0),
-    [data]
-  );
 
-  // Paleta discreta para el pastel/barras (SVG, sin deps)
+  // Colores consistentes para barras y porciones
   const colors = [
     "#4c78a8","#f58518","#54a24b","#e45756","#72b7b2",
     "#f2cf5b","#b279a2","#ff9da6","#9d755d","#bab0ac"
   ];
+
+  // Datos con etiqueta legible
+  const dataPretty = useMemo(
+    () => data.map((d) => ({ ...d, label: String(d.zone).replaceAll("_", " ") })),
+    [data]
+  );
 
   return (
     <main className="container" style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
@@ -57,11 +57,15 @@ export default function AnaliticaDolencias() {
 
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
         <label>Rango:</label>
-        <select value={range} onChange={(e) => { setRange(e.target.value); load(e.target.value); }}>
+        <select
+          value={range}
+          onChange={(e) => { setRange(e.target.value); load(e.target.value); }}
+        >
           <option value="week">Últimos 7 días</option>
           <option value="quarter">Últimos 3 meses</option>
           <option value="half">Últimos 6 meses</option>
         </select>
+
         {fromTo.from && fromTo.to && (
           <small style={{ opacity: 0.8 }}>
             {new Date(fromTo.from).toLocaleDateString()} — {new Date(fromTo.to).toLocaleDateString()}
@@ -69,68 +73,78 @@ export default function AnaliticaDolencias() {
         )}
       </div>
 
-      {loading ? (<p>Cargando…</p>) : (
+      {loading ? (
+        <p>Cargando…</p>
+      ) : (
         <>
-          {/* GRÁFICO DE BARRAS */}
+          {/* ===== GRÁFICO DE BARRAS (Recharts) ===== */}
           <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
             <h3 style={{ marginTop: 0 }}>Barras</h3>
-            {data.length === 0 ? (
+            {dataPretty.length === 0 ? (
               <p style={{ opacity: 0.7 }}>Sin datos.</p>
             ) : (
-              <svg width="100%" height={Math.max(140, 30 * data.length)} viewBox={`0 0 900 ${30 * data.length}`}>
-                {data.map((d, i) => {
-                  const label = String(d.zone).replaceAll("_", " ");
-                  const w = maxCount ? (d.count / maxCount) * 650 : 0;
-                  const y = i * 30 + 8;
-                  const color = colors[i % colors.length];
-                  return (
-                    <g key={d.zone} transform={`translate(200, ${y})`}>
-                      <rect x="0" y="0" width={w} height="16" fill={color} rx="4" />
-                      <text x="-8" y="12" textAnchor="end" style={{ fontSize: 12, fill: "var(--text)" }}>
-                        {label}
-                      </text>
-                      <text x={w + 8} y="12" style={{ fontSize: 12, fill: "var(--muted)" }}>
-                        {d.count}
-                      </text>
-                    </g>
-                  );
-                })}
-                {/* eje base */}
-                <line x1="200" y1="2" x2="200" y2={30 * data.length} stroke="var(--border)"/>
-              </svg>
+              <div style={{ width: "100%", height: Math.max(260, 40 * dataPretty.length) }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  {/* De lado para labels largos: layout vertical (y=labels) */}
+                  <BarChart
+                    data={dataPretty}
+                    layout="vertical"
+                    margin={{ top: 8, right: 24, left: 24, bottom: 8 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" allowDecimals={false} />
+                    <YAxis
+                      type="category"
+                      dataKey="label"
+                      width={180}
+                    />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="count" name="Casos">
+                      {dataPretty.map((_, i) => (
+                        <Cell key={`cell-${i}`} fill={colors[i % colors.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </section>
 
-          {/* GRÁFICO CIRCULAR (PASTEL) */}
+          {/* ===== GRÁFICO CIRCULAR (Recharts) ===== */}
           <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
             <h3 style={{ marginTop: 0 }}>Circular</h3>
             {total === 0 ? (
               <p style={{ opacity: 0.7 }}>Sin datos.</p>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 16, alignItems: "center" }}>
-                <svg width="320" height="320" viewBox="0 0 320 320">
-                  {(() => {
-                    const cx = 160, cy = 160, r = 120;
-                    let acc = 0;
-                    return data.map((d, i) => {
-                      const frac = (d.count || 0) / total;
-                      const angle = frac * 360;
-                      const path = arcPath(cx, cy, r, acc, acc + angle);
-                      acc += angle;
-                      return <path key={d.zone} d={path} fill={colors[i % colors.length]} stroke="var(--surface)" strokeWidth="1"/>;
-                    });
-                  })()}
-                  {/* agujero para donut (opcional): */}
-                  {/* <circle cx="160" cy="160" r="70" fill="var(--surface)"/> */}
-                </svg>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 420px) 1fr", gap: 16, alignItems: "center" }}>
+                <div style={{ width: "100%", height: 340 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip formatter={(v) => [`${v}`, "Casos"]} />
+                      <Legend />
+                      <Pie
+                        data={dataPretty}
+                        dataKey="count"
+                        nameKey="label"
+                        outerRadius={120}
+                        label={({ name, value }) => `${name} (${value})`}
+                      >
+                        {dataPretty.map((_, i) => (
+                          <Cell key={`slice-${i}`} fill={colors[i % colors.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
 
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
-                  {data.map((d, i) => {
+                  {dataPretty.map((d, i) => {
                     const pct = total ? Math.round((d.count * 100) / total) : 0;
                     return (
                       <li key={d.zone} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ width: 12, height: 12, background: colors[i % colors.length], borderRadius: 2, display: "inline-block" }} />
-                        <span style={{ flex: 1 }}>{String(d.zone).replaceAll("_", " ")}</span>
+                        <span style={{ flex: 1 }}>{d.label}</span>
                         <span style={{ opacity: 0.8 }}>{d.count} · {pct}%</span>
                       </li>
                     );
@@ -140,7 +154,7 @@ export default function AnaliticaDolencias() {
             )}
           </section>
 
-          {/* TABLA */}
+          {/* ===== TABLA ===== */}
           <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
             <h3 style={{ marginTop: 0 }}>Detalle</h3>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -151,11 +165,11 @@ export default function AnaliticaDolencias() {
                 </tr>
               </thead>
               <tbody>
-                {data.length === 0 ? (
+                {dataPretty.length === 0 ? (
                   <tr><td colSpan={2} style={{ padding: 12, opacity: 0.7 }}>Sin datos.</td></tr>
-                ) : data.map((row) => (
+                ) : dataPretty.map((row) => (
                   <tr key={row.zone}>
-                    <td style={{ padding: "8px 0" }}>{String(row.zone).replaceAll("_"," ")}</td>
+                    <td style={{ padding: "8px 0" }}>{row.label}</td>
                     <td style={{ padding: "8px 0", textAlign: "right" }}>{row.count}</td>
                   </tr>
                 ))}
