@@ -21,6 +21,9 @@ function hashToIndex(str, modulo) {
 
 const palette = ["#60A5FA", "#F59E0B", "#34D399", "#F472B6", "#A78BFA", "#F87171", "#22D3EE", "#4ADE80"];
 
+// color especial para ADMIN
+const ADMIN_COLOR = "#6B7280"; // gris, cámbialo si quieres otro
+
 export default function VacationsCalendar({ events }) {
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState(Views.MONTH);
@@ -36,9 +39,18 @@ export default function VacationsCalendar({ events }) {
 
   // Colorear por fisio (prioriza ev.color si viene del backend)
   const eventPropGetter = (event) => {
-    const base =
-      event.color ||
-      palette[hashToIndex(event.fisioId || event.fisio?.toString?.() || "", palette.length)];
+    const name = (event.fisioName || event.title || "").toString().toLowerCase();
+
+    let base;
+    if (name === "admin") {
+      // color fijo para el admin
+      base = ADMIN_COLOR;
+    } else {
+      base =
+        event.color ||
+        palette[hashToIndex(event.fisioId || event.fisio?.toString?.() || "", palette.length)];
+    }
+
     return {
       style: {
         backgroundColor: base,

@@ -12,6 +12,46 @@ const parseQDate = (v) => {
   return isNaN(d) ? null : d;
 };
 
+/* ==== HELPERS PARA TRAMOS DE 30 MINUTOS ==== */
+
+// redondea una fecha al tramo de media hora más cercano (:00 o :30)
+const roundToHalfHour = (date) => {
+  const d = new Date(date);
+  if (!(d instanceof Date) || isNaN(d)) return d;
+
+  d.setSeconds(0, 0);
+  const m = d.getMinutes();
+
+  if (m < 15) {
+    d.setMinutes(0);
+  } else if (m < 45) {
+    d.setMinutes(30);
+  } else {
+    d.setMinutes(0);
+    d.setHours(d.getHours() + 1);
+  }
+  return d;
+};
+
+// garantiza que el rango sea múltiplo de 30 min, mínimo 30 min
+const ensureHalfHourRange = (start, end) => {
+  let s = roundToHalfHour(start);
+  let e = new Date(end);
+
+  if (!(e instanceof Date) || isNaN(e)) {
+    e = new Date(s.getTime() + 30 * 60000);
+  }
+
+  let diffMin = Math.round((e - s) / 60000);
+  if (diffMin < 30) diffMin = 30;
+
+  // redondeamos a múltiplo de 30
+  const steps = Math.max(1, Math.round(diffMin / 30));
+  e = new Date(s.getTime() + steps * 30 * 60000);
+
+  return [s, e];
+};
+
 // LIST
 export async function list(req, res) {
   try {
@@ -36,7 +76,6 @@ export async function list(req, res) {
 }
 
 // FEED PARA FULLCALENDAR
-// FEED PARA FULLCALENDAR
 export async function events(req, res) {
   try {
     const startD = parseQDate(req.query.start);
@@ -47,6 +86,7 @@ export async function events(req, res) {
       return res.status(400).json({ message: 'start y end inválidos' });
     }
 
+    // aquí ya usas correctamente < y > para solapamiento
     const q = { start: { $lt: endD }, end: { $gt: startD } };
     if (physio) q.physio = physio;
 
@@ -56,21 +96,32 @@ export async function events(req, res) {
       .lean();
 
     const events = apps.map(a => {
-      // título SIEMPRE seguro:
-      // 1) nombre del paciente poblado
-      // 2) patientName libre
-      // 3) fallback a título de la cita o 'Sesión'
+      // nombre completo del paciente
       const pName = a.patient
         ? `${a.patient?.nombre ?? ''} ${a.patient?.apellidos ?? ''}`.trim()
         : (a.patientName || '');
       const safeTitle = (pName || a.title || 'Sesión').trim();
 
+      // Versión corta para el CALENDARIO: nombre + iniciales de apellidos
+      let shortTitle = safeTitle;
+      if (safeTitle) {
+        const parts = safeTitle.split(/\s+/).filter(Boolean);
+        if (parts.length) {
+          const nombre = parts.shift();
+          const iniciales = parts.map(w => (w[0] || '').toUpperCase()).join('');
+          shortTitle = iniciales ? `${nombre} ${iniciales}.` : nombre;
+        }
+      }
+
       return {
         id: String(a._id),
-        title: safeTitle,                // <<< nunca vacío
+        // en el calendario se verá la versión corta
+        title: shortTitle,
         start: a.start,
         end: a.end,
         extendedProps: {
+          // guardamos el título completo por si hace falta
+          fullTitle: safeTitle,
           physioId: a.physio?._id || a.physio,
           physioName: `${a.physio?.nombre ?? ''} ${a.physio?.apellidos ?? ''}`.trim(),
           patientId: a.patient?._id || null,
@@ -87,7 +138,7 @@ export async function events(req, res) {
   }
 }
 
-// CREATE (con bloqueo por vacaciones)
+// CREATE (con bloqueo por vacaciones y solape)
 export async function create(req, res) {
   try {
     const {
@@ -101,11 +152,28 @@ export async function create(req, res) {
       createdBy
     } = req.body;
 
-    if (!patientName || !physio || !start || (!end && !duration))
-      return res.status(400).json({ message: 'patientName, physio, start y end|duration son obligatorios' });
+    if (!patientName || !physio || !start || (!end && !duration)) {
+      return res.status(400).json({
+        message: 'patientName, physio, start y end|duration son obligatorios'
+      });
+    }
 
-    const startDate = new Date(start);
-    const endDate = end ? new Date(end) : new Date(startDate.getTime() + (Number(duration) || 30) * 60000);
+    let startDate = new Date(start);
+    let endDate = end
+      ? new Date(end)
+      : new Date(startDate.getTime() + (Number(duration) || 30) * 60000);
+
+    // forzamos a franjas de 30 minutos
+    [startDate, endDate] = ensureHalfHourRange(startDate, endDate);
+
+    // validación básica de rango horario
+    if (!(startDate instanceof Date) || isNaN(startDate)
+      || !(endDate instanceof Date) || isNaN(endDate)
+      || endDate <= startDate) {
+      return res.status(400).json({
+        message: 'La hora de fin debe ser posterior a la de inicio.'
+      });
+    }
 
     // NO permitir cita si el fisio está de vacaciones
     const inVacation = await Vacation.exists({
@@ -113,7 +181,23 @@ export async function create(req, res) {
       startDate: { $lt: endDate },
       endDate:   { $gt: startDate },
     });
-    if (inVacation) return res.status(400).json({ message: 'El fisioterapeuta está de vacaciones en ese rango.' });
+    if (inVacation) {
+      return res.status(400).json({
+        message: 'El fisioterapeuta está de vacaciones en ese rango.'
+      });
+    }
+
+    // BLOQUEO de solapamientos (permite citas pegadas)
+    const overlapping = await Appointment.exists({
+      physio,
+      start: { $lt: endDate },
+      end:   { $gt: startDate },
+    });
+    if (overlapping) {
+      return res.status(400).json({
+        message: 'Ya existe otra cita para ese fisioterapeuta en ese horario.'
+      });
+    }
 
     // Resolver/enlazar paciente si viene o si hay alta rápida
     let patientRef = null;
@@ -163,10 +247,22 @@ export async function update(req, res) {
     const current = await Appointment.findById(id);
     if (!current) return res.status(404).json({ message: 'No encontrada' });
 
-    // si cambian fechas o fisio, vuelve a comprobar vacaciones
-    const startDate = start ? new Date(start) : current.start;
-    const endDate   = end ? new Date(end) : current.end;
+    // si cambian fechas o fisio, vuelve a comprobar vacaciones/solape
+    let startDate = start ? new Date(start) : current.start;
+    let endDate   = end ? new Date(end) : current.end;
     const physioId  = physio || current.physio;
+
+    // forzamos a franjas de 30 minutos
+    [startDate, endDate] = ensureHalfHourRange(startDate, endDate);
+
+    // validación básica de rango horario
+    if (!(startDate instanceof Date) || isNaN(startDate)
+      || !(endDate instanceof Date) || isNaN(endDate)
+      || endDate <= startDate) {
+      return res.status(400).json({
+        message: 'La hora de fin debe ser posterior a la de inicio.'
+      });
+    }
 
     if (start || end || physio) {
       const inVacation = await Vacation.exists({
@@ -174,7 +270,24 @@ export async function update(req, res) {
         startDate: { $lt: endDate },
         endDate:   { $gt: startDate },
       });
-      if (inVacation) return res.status(400).json({ message: 'El fisioterapeuta está de vacaciones en ese rango.' });
+      if (inVacation) {
+        return res.status(400).json({
+          message: 'El fisioterapeuta está de vacaciones en ese rango.'
+        });
+      }
+
+      // BLOQUEO de solapamientos (excluyendo la cita actual)
+      const overlapping = await Appointment.exists({
+        _id: { $ne: id },
+        physio: physioId,
+        start: { $lt: endDate },
+        end:   { $gt: startDate },
+      });
+      if (overlapping) {
+        return res.status(400).json({
+          message: 'Ya existe otra cita para ese fisioterapeuta en ese horario.'
+        });
+      }
     }
 
     // resolver paciente

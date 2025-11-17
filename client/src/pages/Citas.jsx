@@ -69,6 +69,23 @@ function AdjButton({ children, onClick, variant = "action", disabled = false, ti
   );
 }
 
+// helper para redondear horas a :00 o :30
+const snapToHalfHour = (d) => {
+  const copy = new Date(d);
+  copy.setSeconds(0, 0);
+  const m = copy.getMinutes();
+
+  if (m < 15) {
+    copy.setMinutes(0);
+  } else if (m < 45) {
+    copy.setMinutes(30);
+  } else {
+    copy.setMinutes(0);
+    copy.setHours(copy.getHours() + 1);
+  }
+  return copy;
+};
+
 export default function Citas() {
   const calRef = useRef(null);
 
@@ -142,10 +159,28 @@ export default function Citas() {
         const rawApps = Array.isArray(appsResp.data) ? appsResp.data : appsResp.data?.data || [];
         const rawVacs = Array.isArray(vacsResp.data) ? vacsResp.data : vacsResp.data?.data || [];
 
-        const apps = rawApps.map((e) => ({
-          ...e,
-          title: (e?.title || e?.extendedProps?.patientName || "Sesión").trim(),
-        }));
+        // del backend viene:
+        // - title: nombre corto (para CALENDARIO)
+        // - extendedProps.fullTitle: nombre completo
+        // - extendedProps.patientName: nombre completo del paciente
+        const apps = rawApps.map((e) => {
+          const fullTitle =
+            e?.extendedProps?.patientName ||
+            e?.extendedProps?.fullTitle ||
+            e?.title ||
+            "Sesión";
+
+          const shortTitle = (e?.title || fullTitle || "Sesión").trim();
+
+          return {
+            ...e,
+            title: shortTitle,
+            extendedProps: {
+              ...e.extendedProps,
+              fullTitle,
+            },
+          };
+        });
 
         const vacs = activePhysioId
           ? rawVacs.filter((v) => v?.extendedProps?.fisioId === activePhysioId)
@@ -157,9 +192,14 @@ export default function Citas() {
             id: e.id,
             start: e.start,
             end: e.end,
-            title: e.title || "Sesión",
+            // para la lista usamos el nombre COMPLETO
+            title: e.extendedProps?.fullTitle || e.title || "Sesión",
             physioName: e.extendedProps?.physioName || "",
-            patientName: e.extendedProps?.patientName || e.title || "Sesión",
+            patientName:
+              e.extendedProps?.patientName ||
+              e.extendedProps?.fullTitle ||
+              e.title ||
+              "Sesión",
             physio: e.extendedProps?.physioId || "",
             patient: e.extendedProps?.patientId || "",
             notes: e.extendedProps?.notes || "",
@@ -183,15 +223,25 @@ export default function Citas() {
       return { html: `<div style="font-weight:600; opacity:.8">${arg.event.title}</div>` };
     }
     const t = (arg.event.title || "Sesión").trim();
+    // aquí se verá el nombre + iniciales de apellidos
     return { html: `<div><b>${t}</b></div>` };
   };
 
   const openFormWith = (startDate, endDate) => {
+    let s = snapToHalfHour(startDate);
+    let e = snapToHalfHour(endDate);
+
+    if (e <= s) {
+      e = new Date(s.getTime() + 30 * 60000);
+    }
+
+    const durationMin = Math.max(30, Math.round((e - s) / 60000));
+
     setFormInitial({
       id: undefined,
-      start: startDate.toISOString(),
-      end: endDate.toISOString(),
-      durationMin: Math.max(15, Math.round((endDate - startDate) / 60000)),
+      start: s.toISOString(),
+      end: e.toISOString(),
+      durationMin,
       physio: activePhysioId || "",
       patientName: "",
       notes: "",
@@ -235,13 +285,17 @@ export default function Citas() {
   };
 
   const handleEdit = (item) => {
+    const s = snapToHalfHour(new Date(item.start));
+    let e = snapToHalfHour(new Date(item.end));
+    if (e <= s) e = new Date(s.getTime() + 30 * 60000);
+
     setFormInitial({
       id: item.id,
       patientName: item.patientName || item.title || "",
       physio: item.physio || activePhysioId || "",
-      start: new Date(item.start).toISOString(),
-      end: new Date(item.end).toISOString(),
-      durationMin: Math.max(15, Math.round((new Date(item.end) - new Date(item.start)) / 60000)),
+      start: s.toISOString(),
+      end: e.toISOString(),
+      durationMin: Math.max(30, Math.round((e - s) / 60000)),
       notes: item.notes,
     });
     setShowForm(true);
@@ -319,11 +373,16 @@ export default function Citas() {
             nowIndicator
             slotMinTime="08:00:00"
             slotMaxTime="21:00:00"
+            // franjas de media hora
+            slotDuration="00:30:00"
+            snapDuration="00:30:00"
             events={fetchEvents}
             eventContent={eventContent}
             selectable
             select={(info) => openFormWith(info.start, info.end)}
-            dateClick={(arg) => openFormWith(arg.date, new Date(arg.date.getTime() + 30 * 60000))}
+            dateClick={(arg) =>
+              openFormWith(arg.date, new Date(arg.date.getTime() + 30 * 60000))
+            }
             datesSet={(info) => setCurrentRange({ start: info.start, end: info.end })}
           />
         </div>
