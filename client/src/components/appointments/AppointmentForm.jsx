@@ -1,29 +1,43 @@
+// src/components/appointments/AppointmentForm.jsx
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
 export default function AppointmentForm({ physios = [], initial, onSubmit, onCancel }) {
-  const buildState = (init) => ({
-    physio: init?.physio || "",
-    patientName: init?.patientName || "",
-    createPatientIfMissing: false,
-    start: init?.start || dayjs().minute(0).second(0).toISOString(),
-    durationMin: init ? dayjs(init.end).diff(dayjs(init.start), "minute") : 30,
-    notes: init?.notes || "",
-    id: init?.id,
-  });
+  const buildState = (init) => {
+    const start = init?.start ? dayjs(init.start) : dayjs().minute(0).second(0);
+    const end = init?.end ? dayjs(init.end) : start.add(30, "minute");
+
+    return {
+      physio: init?.physio || "",
+      patientName: init?.patientName || "",
+      createPatientIfMissing: !!init?.createPatientIfMissing,
+      // guardamos fecha y hora por separado para poder editarlas
+      date: start.format("YYYY-MM-DD"), // para <input type="date">
+      time: start.format("HH:mm"),      // para <input type="time">
+      durationMin: end.diff(start, "minute") || 30,
+      notes: init?.notes || "",
+      id: init?.id,
+    };
+  };
 
   const [form, setForm] = useState(buildState(initial));
 
   useEffect(() => {
-    setForm(buildState(initial)); // reset duro al cambiar initial
+    setForm(buildState(initial)); // reset al cambiar initial (nueva / editar)
   }, [initial]);
 
   const change = (k, v) => setForm((s) => ({ ...s, [k]: v }));
 
   const submit = (e) => {
     e.preventDefault();
-    const start = dayjs(form.start);
-    const end = start.add(form.durationMin || 30, "minute");
+
+    // Construimos el start a partir de date + time
+    if (!form.date || !form.time) return;
+
+    const start = dayjs(`${form.date}T${form.time}:00`);
+    const duration = form.durationMin || 30;
+    const end = start.add(duration, "minute");
+
     onSubmit({
       id: form.id,
       physio: form.physio,
@@ -35,12 +49,11 @@ export default function AppointmentForm({ physios = [], initial, onSubmit, onCan
     });
   };
 
-  // Más espacio y consistencia visual sin depender de utilidades externas
   return (
     <form
       id="appointment-form"
       onSubmit={submit}
-      style={{ display: "grid", gap: 14 }}   // <- espacio vertical uniforme entre bloques
+      style={{ display: "grid", gap: 14 }}
     >
       <div>
         <label className="block text-sm mb-1">Fisioterapeuta</label>
@@ -82,14 +95,27 @@ export default function AppointmentForm({ physios = [], initial, onSubmit, onCan
         </div>
       </div>
 
+      {/* Ahora día y hora SON EDITABLES */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
           <label className="block text-sm mb-1">Día</label>
-          <input className="w-full" value={dayjs(form.start).format("DD/MM/YYYY")} readOnly />
+          <input
+            type="date"
+            className="w-full"
+            value={form.date}
+            onChange={(e) => change("date", e.target.value)}
+            required
+          />
         </div>
         <div>
           <label className="block text-sm mb-1">Hora</label>
-          <input className="w-full" value={dayjs(form.start).format("HH:mm")} readOnly />
+          <input
+            type="time"
+            className="w-full"
+            value={form.time}
+            onChange={(e) => change("time", e.target.value)}
+            required
+          />
         </div>
       </div>
 
@@ -101,7 +127,9 @@ export default function AppointmentForm({ physios = [], initial, onSubmit, onCan
           step={15}
           className="w-full"
           value={form.durationMin}
-          onChange={(e) => change("durationMin", parseInt(e.target.value || "30", 10))}
+          onChange={(e) =>
+            change("durationMin", parseInt(e.target.value || "30", 10))
+          }
         />
       </div>
 
@@ -116,8 +144,12 @@ export default function AppointmentForm({ physios = [], initial, onSubmit, onCan
       </div>
 
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
-        <button type="button" onClick={onCancel} className="btn-outline">Cancelar</button>
-        <button type="submit" className="btn-primary">Guardar</button>
+        <button type="button" onClick={onCancel} className="btn-outline">
+          Cancelar
+        </button>
+        <button type="submit" className="btn-primary">
+          Guardar
+        </button>
       </div>
     </form>
   );
