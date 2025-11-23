@@ -22,19 +22,19 @@ function SoftButton({ children, onClick, variant = "action" }) {
   const palette =
     variant === "delete"
       ? {
-        color: "#b91c1c",
-        border: "1px solid rgba(185,28,28,0.35)",
-        background: "rgba(185,28,28,0.05)",
-        hoverBg: "rgba(185,28,28,0.12)",
-        focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
-      }
+          color: "#b91c1c",
+          border: "1px solid rgba(185,28,28,0.35)",
+          background: "rgba(185,28,28,0.05)",
+          hoverBg: "rgba(185,28,28,0.12)",
+          focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
+        }
       : {
-        color: "var(--link)",
-        border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-        background: "color-mix(in srgb, var(--link) 6%, transparent)",
-        hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
-        focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
-      };
+          color: "var(--link)",
+          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+          background: "color-mix(in srgb, var(--link) 6%, transparent)",
+          hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
+          focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+        };
 
   const [bg, setBg] = useState(palette.background);
 
@@ -76,7 +76,7 @@ function fmtDate(d) {
   }
 }
 
-/* === (EXISTENTE) días naturales: lo dejamos por compatibilidad, por si lo quieres usar === */
+/* === días naturales (por si lo quieres usar en algún momento) === */
 function daysBetween(a, b) {
   try {
     const d1 = new Date(a);
@@ -87,7 +87,7 @@ function daysBetween(a, b) {
   }
 }
 
-/* === NUEVO: cálculo de días laborables (excluye fines de semana y festivos) === */
+/* === Cálculo de días laborables (excluye fines de semana y festivos) === */
 const HOLIDAYS_2025 = new Set([
   "2025-01-01",
   "2025-01-06",
@@ -122,12 +122,15 @@ function countWorkingDays(startDate, endDate, holidays = HOLIDAYS_2025, weekend 
   }
   return count;
 }
-/* ============================================================================ */
 
-export default function VacationsList({ reloadKey }) {
+/* ======================================================================== */
+
+export default function VacationsList({ reloadKey, role }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const isAdmin = (role || "").toLowerCase() === "admin";
 
   const sorted = useMemo(
     () => [...items].sort((a, b) => new Date(b.startDate) - new Date(a.startDate)),
@@ -154,6 +157,12 @@ export default function VacationsList({ reloadKey }) {
   }, [reloadKey]);
 
   async function handleDelete(id) {
+    // Seguridad extra: por si alguien no admin llega a llamar a esto
+    if (!isAdmin) {
+      alert("No tienes permisos para eliminar vacaciones.");
+      return;
+    }
+
     if (!confirm("¿Eliminar estas vacaciones?")) return;
     try {
       await apiDeleteVacation(id);
@@ -170,9 +179,24 @@ export default function VacationsList({ reloadKey }) {
     </section>
   );
 
-  if (loading) return <Wrapper><p className="text-[var(--muted)]">Cargando…</p></Wrapper>;
-  if (error) return <Wrapper><p className="text-red-500">{error}</p></Wrapper>;
-  if (!sorted.length) return <Wrapper><p className="text-[var(--muted)]">No hay vacaciones registradas.</p></Wrapper>;
+  if (loading)
+    return (
+      <Wrapper>
+        <p className="text-[var(--muted)]">Cargando…</p>
+      </Wrapper>
+    );
+  if (error)
+    return (
+      <Wrapper>
+        <p className="text-red-500">{error}</p>
+      </Wrapper>
+    );
+  if (!sorted.length)
+    return (
+      <Wrapper>
+        <p className="text-[var(--muted)]">No hay vacaciones registradas.</p>
+      </Wrapper>
+    );
 
   return (
     <Wrapper>
@@ -191,11 +215,8 @@ export default function VacationsList({ reloadKey }) {
           const inicio = fmtDate(v.startDate);
           const fin = fmtDate(v.endDate);
 
-          // IMPORT: usamos días laborables
           const workingDays = countWorkingDays(v.startDate, v.endDate);
-
-          // (opcional) si alguna vez quieres mostrar también naturales
-          const naturalDays = daysBetween(v.startDate, v.endDate);
+          const naturalDays = daysBetween(v.startDate, v.endDate); // por si lo quieres usar
 
           return (
             <li
@@ -205,10 +226,9 @@ export default function VacationsList({ reloadKey }) {
                 borderRadius: 12,
                 background: "var(--panel)",
                 border: "1px solid var(--border)",
-                boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
+                boxShadow: "0 1px 8px rgba(0, 0, 0, 0.06)",
               }}
             >
-              {/* Fila */}
               <div
                 style={{
                   display: "flex",
@@ -225,18 +245,22 @@ export default function VacationsList({ reloadKey }) {
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: 16 }}>
                     {inicio} &nbsp;→&nbsp; {fin}
-                    {/* mostramos SIEMPRE los laborables */}
-                    &nbsp;·&nbsp; <strong>{workingDays} {workingDays === 1 ? "día" : "días"}</strong>
-                    {/* Si quieres añadir también los naturales, descomenta: */}
+                    &nbsp;·&nbsp;
+                    <strong>
+                      {workingDays} {workingDays === 1 ? "día" : "días"}
+                    </strong>
+                    {/* Si quieres mostrar también los naturales, puedes descomentar: */}
                     {/* &nbsp;<span className="opacity-70">({naturalDays} naturales)</span> */}
                     {v.notes?.trim() && <> &nbsp;·&nbsp;Notas: {v.notes.trim()}</>}
                   </div>
                 </div>
 
-                {/* Botón suave */}
-                <SoftButton variant="delete" onClick={() => handleDelete(v._id)}>
-                  Eliminar
-                </SoftButton>
+                {/* Botón eliminar SOLO si es admin */}
+                {isAdmin && (
+                  <SoftButton variant="delete" onClick={() => handleDelete(v._id)}>
+                    Eliminar
+                  </SoftButton>
+                )}
               </div>
             </li>
           );

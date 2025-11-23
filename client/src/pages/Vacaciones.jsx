@@ -577,7 +577,7 @@ export default function Vacaciones() {
 
       {/* Lista (vacaciones aprobadas) */}
       <div style={{ marginTop: 50, marginBottom: 60 }}>
-        <VacationsList reloadKey={reloadKey} />
+        <VacationsList reloadKey={reloadKey} role={role} />
       </div>
     </div>
   );
