@@ -31,19 +31,20 @@ function AdjButton({ children, onClick, variant = "action" }) {
   const palette =
     variant === "delete"
       ? {
-        color: "#b91c1c",
-        border: "1px solid rgba(185,28,28,0.35)",
-        background: "rgba(185,28,28,0.05)",
-        hoverBg: "rgba(185,28,28,0.12)",
-        focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
-      }
+          color: "#b91c1c",
+          border: "1px solid rgba(185,28,28,0.35)",
+          background: "rgba(185,28,28,0.05)",
+          hoverBg: "rgba(185,28,28,0.12)",
+          focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
+        }
       : {
-        color: "var(--link)",
-        border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-        background: "color-mix(in srgb, var(--link) 6%, transparent)",
-        hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
-        focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
-      };
+          color: "var(--link)",
+          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+          background: "color-mix(in srgb, var(--link) 6%, transparent)",
+          hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
+          focusRing:
+            "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+        };
 
   const [bg, setBg] = useState(palette.background);
 
@@ -101,13 +102,13 @@ function SeguimientoRow({ item, isOpen, onToggle, onEdit, onDelete }) {
     }
   }, [item.fecha]);
 
-  const nombrePaciente =
-    item?.paciente
-      ? `${item.paciente?.nombre || ""} ${item.paciente?.apellidos || ""}`.trim()
-      : (item?.pacienteNombre || "—");
+  const nombrePaciente = item?.paciente
+    ? `${item.paciente?.nombre || ""} ${item.paciente?.apellidos || ""}`.trim()
+    : item?.pacienteNombre || "—";
 
-  const nombreFisio =
-    item?.fisio ? `${item.fisio?.nombre || ""} ${item.fisio?.apellidos || ""}`.trim() : "—";
+  const nombreFisio = item?.fisio
+    ? `${item.fisio?.nombre || ""} ${item.fisio?.apellidos || ""}`.trim()
+    : "—";
 
   return (
     <li
@@ -142,60 +143,109 @@ function SeguimientoRow({ item, isOpen, onToggle, onEdit, onDelete }) {
           gap: 8,
         }}
       >
-       <div>
-  <div
-    className="title"
-    style={{
-      fontWeight: 600,
-      color: "var(--text)",
-      fontSize: "calc(var(--list-title-size) * 1.)", // ← un 15% más grande
-      lineHeight: 1.3,
-    }}
-  >
-    {nombrePaciente}
-  </div>
-  <div
-    style={{
-      color: "var(--muted)",
-      fontSize: "calc(var(--list-font-size) * 0.80)", // ← antes 13px
-      lineHeight: 1.4,
-    }}
-  >
-    {fechaStr} · {nombreFisio}
-    {item.primeraConsulta ? " · Primera consulta" : ""}
-  </div>
-</div>
-
+        <div>
+          <div
+            className="title"
+            style={{
+              fontWeight: 600,
+              color: "var(--text)",
+              fontSize: "calc(var(--list-title-size) * 1.)",
+              lineHeight: 1.3,
+            }}
+          >
+            {nombrePaciente}
+          </div>
+          <div
+            style={{
+              color: "var(--muted)",
+              fontSize: "calc(var(--list-font-size) * 0.80)",
+              lineHeight: 1.4,
+            }}
+          >
+            {fechaStr} · {nombreFisio}
+            {item.primeraConsulta ? " · Primera consulta" : ""}
+          </div>
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: "var(--link)", userSelect: "none" }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--link)",
+              userSelect: "none",
+            }}
+          >
             {isOpen ? "Ocultar" : "Ver detalle"}
           </span>
-          <AdjButton onClick={(e) => { e.stopPropagation(); onEdit?.(item); }}>Editar</AdjButton>
-          <AdjButton variant="delete" onClick={(e) => { e.stopPropagation(); onDelete?.(item); }}>
+          <AdjButton
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit?.(item);
+            }}
+          >
+            Editar
+          </AdjButton>
+          <AdjButton
+            variant="delete"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.(item);
+            }}
+          >
             Eliminar
           </AdjButton>
         </div>
       </button>
 
-      <div style={{ height: h, overflow: "hidden", transition: "height 300ms" }}>
+      <div
+        style={{
+          height: h,
+          overflow: "hidden",
+          transition: "height 300ms",
+        }}
+      >
         <div ref={wrapRef}>
-          <div style={{  padding: "0 14px 14px 14px",  fontSize: "calc(var(--list-font-size) * 0.90)", }}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Zonas del cuerpo</div>
-            {Array.isArray(item.bodyZones) && item.bodyZones.length > 0
-              ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {item.bodyZones.map(z => (
-                  <span key={z} style={{ fontSize: 15, padding: "4px 10px", border: "1px solid var(--border)", borderRadius: 6 }}>
+          <div
+            style={{
+              padding: "0 14px 14px 14px",
+              fontSize: "calc(var(--list-font-size) * 0.90)",
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>
+              Zonas del cuerpo
+            </div>
+            {Array.isArray(item.bodyZones) && item.bodyZones.length > 0 ? (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {item.bodyZones.map((z) => (
+                  <span
+                    key={z}
+                    style={{
+                      fontSize: 15,
+                      padding: "4px 10px",
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                    }}
+                  >
                     {String(z).replaceAll("_", " ")}
                   </span>
                 ))}
               </div>
-              : <i style={{ color: "var(--muted)" }}>—</i>
-            }
+            ) : (
+              <i style={{ color: "var(--muted)" }}>—</i>
+            )}
 
-            <div style={{ fontWeight: 600, marginTop: 12, marginBottom: 6 }}>Comentario</div>
+            <div
+              style={{ fontWeight: 600, marginTop: 12, marginBottom: 6 }}
+            >
+              Comentario
+            </div>
             <div style={{ whiteSpace: "pre-wrap" }}>
-              {item.comentario?.trim() ? item.comentario : <i style={{ color: "var(--muted)" }}>—</i>}
+              {item.comentario?.trim() ? (
+                item.comentario
+              ) : (
+                <i style={{ color: "var(--muted)" }}>—</i>
+              )}
             </div>
           </div>
         </div>
@@ -214,6 +264,8 @@ export default function Seguimientos() {
 
   const [list, setList] = useState([]);
   const [selected, setSelected] = useState(null);
+
+  const [order, setOrder] = useState("date"); // "date" | "alpha"
 
   const [form, setForm] = useState({
     pacienteNombre: "",
@@ -249,7 +301,7 @@ export default function Seguimientos() {
         fisioId: fisioId || undefined,
         from: from || undefined,
         to: to || undefined,
-        sort: "date",
+        sort: "date", // mantenemos sort por fecha en backend
       });
       setList(items);
     } catch (e) {
@@ -260,12 +312,53 @@ export default function Seguimientos() {
   }
 
   useEffect(() => {
-    load().catch(() => { });
+    load().catch(() => {});
   }, []);
+
+  // lista ordenada en frontend según `order`
+  const sortedList = useMemo(() => {
+    const arr = [...list];
+
+    if (order === "alpha") {
+      arr.sort((a, b) => {
+        const nameA = (
+          a.paciente
+            ? `${a.paciente?.nombre || ""} ${
+                a.paciente?.apellidos || ""
+              }`
+            : a.pacienteNombre || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        const nameB = (
+          b.paciente
+            ? `${b.paciente?.nombre || ""} ${
+                b.paciente?.apellidos || ""
+              }`
+            : b.pacienteNombre || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        return nameA.localeCompare(nameB, "es");
+      });
+    } else {
+      // order === "date" (por defecto: más recientes primero)
+      arr.sort((a, b) => {
+        const da = new Date(a.fecha || 0).getTime() || 0;
+        const db = new Date(b.fecha || 0).getTime() || 0;
+        return db - da;
+      });
+    }
+
+    return arr;
+  }, [list, order]);
 
   async function crearSeguimiento(e) {
     e.preventDefault();
-    if (!form.pacienteNombre.trim()) return alert("Escribe el nombre del paciente.");
+    if (!form.pacienteNombre.trim())
+      return alert("Escribe el nombre del paciente.");
     if (!form.fisioId) return alert("Selecciona un fisioterapeuta.");
     if (!form.fecha) return alert("Indica la fecha del seguimiento.");
 
@@ -280,9 +373,16 @@ export default function Seguimientos() {
 
     try {
       const nuevo = await apiCreateSeguimiento(payload);
-      setList(prev => [nuevo, ...prev]);
-      setForm({ pacienteNombre: "", fisioId: "", fecha: "", comentario: "", primeraConsulta: false, bodyZones: [] });
-      load().catch(() => { });
+      setList((prev) => [nuevo, ...prev]);
+      setForm({
+        pacienteNombre: "",
+        fisioId: "",
+        fecha: "",
+        comentario: "",
+        primeraConsulta: false,
+        bodyZones: [],
+      });
+      load().catch(() => {});
       setSelected(nuevo);
       alert("Seguimiento creado");
     } catch (e) {
@@ -296,17 +396,24 @@ export default function Seguimientos() {
   }
 
   async function eliminarSeguimiento(it) {
-    const ok = confirm("¿Eliminar este seguimiento? Esta acción no se puede deshacer.");
+    const ok = confirm(
+      "¿Eliminar este seguimiento? Esta acción no se puede deshacer."
+    );
     if (!ok) return;
     await apiDeleteSeguimiento(it._id);
-    setList(prev => prev.filter(x => x._id !== it._id));
-    setSelected(prev => (prev?._id === it._id ? null : prev));
+    setList((prev) => prev.filter((x) => x._id !== it._id));
+    setSelected((prev) => (prev?._id === it._id ? null : prev));
     alert("Seguimiento eliminado");
   }
 
   return (
-    <main className="container" style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <h1 className="page-title" style={{ marginBottom: 16 }}>SEGUIMIENTO Y VALORACIÓN</h1>
+    <main
+      className="container"
+      style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}
+    >
+      <h1 className="page-title" style={{ marginBottom: 16 }}>
+        SEGUIMIENTO Y VALORACIÓN
+      </h1>
 
       <div
         style={{
@@ -321,7 +428,13 @@ export default function Seguimientos() {
         <h3 style={{ margin: 0 }}>Crear seguimiento</h3>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1.4fr 1fr",
+          gap: 24,
+        }}
+      >
         {/* Columna izquierda */}
         <div>
           <div style={{ display: "grid", gap: 10, marginBottom: 12 }}>
@@ -331,22 +444,51 @@ export default function Seguimientos() {
               onChange={(e) => setQuery(e.target.value)}
             />
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 10,
+              }}
+            >
               <div style={{ display: "grid", gap: 6 }}>
-                <label style={{ color: "var(--muted)", fontWeight: 600 }}>Desde</label>
-                <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+                <label
+                  style={{ color: "var(--muted)", fontWeight: 600 }}
+                >
+                  Desde
+                </label>
+                <input
+                  type="date"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
               </div>
               <div style={{ display: "grid", gap: 6 }}>
-                <label style={{ color: "var(--muted)", fontWeight: 600 }}>Hasta</label>
-                <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+                <label
+                  style={{ color: "var(--muted)", fontWeight: 600 }}
+                >
+                  Hasta
+                </label>
+                <input
+                  type="date"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                />
               </div>
             </div>
 
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={{ color: "var(--muted)", fontWeight: 600 }}>Fisio</label>
-              <select value={fisioId} onChange={(e) => setFisioId(e.target.value)}>
+              <label
+                style={{ color: "var(--muted)", fontWeight: 600 }}
+              >
+                Fisio
+              </label>
+              <select
+                value={fisioId}
+                onChange={(e) => setFisioId(e.target.value)}
+              >
                 <option value="">Todos</option>
-                {fisios.map(f => (
+                {fisios.map((f) => (
                   <option key={f._id} value={f._id}>
                     {f.nombre} {f.apellidos || ""}
                   </option>
@@ -354,8 +496,43 @@ export default function Seguimientos() {
               </select>
             </div>
 
-            <div>
-              <button onClick={load}>Buscar</button>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <button type="button" onClick={load}>
+                Buscar
+              </button>
+
+              <div
+                style={{
+                  marginLeft: 4,
+                  display: "flex",
+                  gap: 6,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <span style={{ color: "var(--muted)" }}>Orden:</span>
+                <button
+                  type="button"
+                  onClick={() => setOrder("alpha")}
+                  disabled={order === "alpha"}
+                >
+                  Alfabético
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrder("date")}
+                  disabled={order === "date"}
+                >
+                  Fecha
+                </button>
+              </div>
             </div>
           </div>
 
@@ -369,17 +546,21 @@ export default function Seguimientos() {
               margin: 0,
               display: "grid",
               gap: 12,
-               fontSize: "var(--list-font-size)",
+              fontSize: "var(--list-font-size)",
             }}
           >
-            {list.map((it) => {
+            {sortedList.map((it) => {
               const open = selected?._id === it._id;
               return (
                 <SeguimientoRow
                   key={it._id}
                   item={it}
                   isOpen={open}
-                  onToggle={() => setSelected(prev => (prev?._id === it._id ? null : it))}
+                  onToggle={() =>
+                    setSelected((prev) =>
+                      prev?._id === it._id ? null : it
+                    )
+                  }
                   onEdit={editarSeguimiento}
                   onDelete={eliminarSeguimiento}
                 />
@@ -393,14 +574,21 @@ export default function Seguimientos() {
           <form
             onSubmit={crearSeguimiento}
             className="card"
-            style={{ display: "grid", gap: 10, marginBottom: 24, padding: 16 }}
+            style={{
+              display: "grid",
+              gap: 10,
+              marginBottom: 24,
+              padding: 16,
+            }}
           >
             <div className="form-field">
               <label>Paciente</label>
               <input
                 placeholder="Nombre y apellidos..."
                 value={form.pacienteNombre}
-                onChange={(e) => setForm({ ...form, pacienteNombre: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, pacienteNombre: e.target.value })
+                }
               />
             </div>
 
@@ -409,7 +597,9 @@ export default function Seguimientos() {
               <input
                 type="date"
                 value={form.fecha}
-                onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, fecha: e.target.value })
+                }
               />
             </div>
 
@@ -417,10 +607,12 @@ export default function Seguimientos() {
               <label>Fisioterapeuta</label>
               <select
                 value={form.fisioId}
-                onChange={(e) => setForm({ ...form, fisioId: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, fisioId: e.target.value })
+                }
               >
                 <option value="">Selecciona…</option>
-                {fisios.map(f => (
+                {fisios.map((f) => (
                   <option key={f._id} value={f._id}>
                     {f.nombre} {f.apellidos || ""}
                   </option>
@@ -438,7 +630,7 @@ export default function Seguimientos() {
                   gap: 8,
                   margin: 0,
                   fontWeight: 400,
-                  whiteSpace: "nowrap",   // <- evita salto de línea
+                  whiteSpace: "nowrap",
                   cursor: "pointer",
                 }}
               >
@@ -446,25 +638,33 @@ export default function Seguimientos() {
                   id="primeraConsulta"
                   type="checkbox"
                   checked={!!form.primeraConsulta}
-                  onChange={(e) => setForm({ ...form, primeraConsulta: e.target.checked })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      primeraConsulta: e.target.checked,
+                    })
+                  }
                   style={{ margin: 0 }}
                 />
                 ¿Primera consulta?
               </label>
             </div>
 
-
             {/* Zonas del cuerpo */}
             <div className="form-field" style={{ marginTop: 8 }}>
-              <label style={{ display: "block", fontWeight: 500, marginBottom: 6 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontWeight: 500,
+                  marginBottom: 6,
+                }}
+              >
                 Zonas del cuerpo
               </label>
 
               <BodyZonesSelect
                 value={form.bodyZones || []}
                 onChange={(v) => setForm({ ...form, bodyZones: v })}
-
-              // title={null}
               />
             </div>
 
@@ -474,7 +674,9 @@ export default function Seguimientos() {
                 rows={5}
                 placeholder="Escribe la valoración / seguimiento…"
                 value={form.comentario}
-                onChange={(e) => setForm({ ...form, comentario: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, comentario: e.target.value })
+                }
               />
             </div>
 
