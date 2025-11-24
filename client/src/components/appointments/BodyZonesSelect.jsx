@@ -58,7 +58,8 @@ const GROUPS = {
 
 /** Plantillas de columnas por grupo */
 const GRID_TEMPLATES = {
-  "Cabeza y cuello": "repeat(2, minmax(220px, 1fr))", // 2 columnas fijas (2+2)
+  // Fuerza 1 sola columna para evitar cortes
+  "Cabeza y cuello": "1fr",
 };
 
 /** Etiqueta visible a partir de snake_case */

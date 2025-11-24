@@ -10,7 +10,7 @@ import {
 } from "recharts";
 
 export default function AnaliticaDolencias() {
-  const [range, setRange] = useState("quarter"); // week | quarter | half
+  const [range, setRange] = useState("quarter"); // week | quarter | half | all
   const [data, setData] = useState([]);          // [{ zone, count }]
   const [fromTo, setFromTo] = useState({ from: null, to: null });
   const [loading, setLoading] = useState(false);
@@ -64,6 +64,7 @@ export default function AnaliticaDolencias() {
           <option value="week">Últimos 7 días</option>
           <option value="quarter">Últimos 3 meses</option>
           <option value="half">Últimos 6 meses</option>
+          <option value="all">Todo el histórico</option>
         </select>
 
         {fromTo.from && fromTo.to && (
@@ -138,7 +139,7 @@ export default function AnaliticaDolencias() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart margin={{ top: 16, right: 30, bottom: 16, left: 30 }}>
                       <Tooltip formatter={(v) => [`${v}`, "Casos"]} />
-                      {/* ❌ Eliminamos <Legend /> */}
+                      {/* Leyenda personalizada, no usamos <Legend /> */}
                       <Pie
                         data={dataPretty}
                         dataKey="count"
@@ -196,7 +197,6 @@ export default function AnaliticaDolencias() {
               </div>
             )}
           </section>
-
 
           {/* ===== TABLA ===== */}
           <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
