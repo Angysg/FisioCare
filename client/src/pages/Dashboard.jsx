@@ -14,25 +14,25 @@ export default function Dashboard() {
   const role = normalizeRole(roleRaw);
 
   const comunes = [
-    { title: "Pacientes", to: "/pacientes", desc: "Gestión de fichas" },
-    { title: "Citas", to: "/citas", desc: "Agenda y reservas" },
+    { title: "Pacientes", to: "/pacientes", desc: "Gestión de fichas de pacientes" },
+    { title: "Citas", to: "/citas", desc: "Agenda y reservas de citas" },
     {
       title: "Seguimiento y Valoración",
       to: "/seguimiento",
-      desc: "Controles y notas",
+      desc: "Controles y notas para el seguimiento de los pacientes",
     },
     { title: "Grupo Pilates", to: "/pilates", desc: "Grupos y horarios" },
-    { title: "Vacaciones", to: "/vacaciones", desc: "Calendario y gestión" },
+    { title: "Vacaciones", to: "/vacaciones", desc: "Calendario y gestión de vacaciones" },
   ];
 
   const adminOnly = [
     {
       title: "Fisioterapeutas",
       to: "/fisioterapeutas",
-      desc: "Altas, permisos y roles",
+      desc: "Gestión de altas y permisos",
     },
     {
-      title: "Analítica de dolencias",
+      title: "Gráficos",
       to: "/analitica-dolencias",
       desc: "Zonas más tratadas",
     },
