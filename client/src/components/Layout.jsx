@@ -21,7 +21,7 @@ export default function Layout() {
     setUser(u || null);
   }, []);
 
-  const isAdmin = role.includes("admin");         // cubre "admin" y "administrador"
+  const isAdmin = role.includes("admin"); // cubre "admin" y "administrador"
   const isRecepcion = role.includes("recepcion"); // cubre "recepción" normalizada
 
   // links para la navegación central
@@ -36,40 +36,17 @@ export default function Layout() {
 
   const adminLinks = isAdmin
     ? [
-        { to: "/fisioterapeutas", label: "Fisioterapeutas" },
-        { to: "/analitica-dolencias", label: "Gráficos" }, // ✅ nuevo enlace
-      ]
+      { to: "/fisioterapeutas", label: "Fisioterapeutas" },
+      { to: "/analitica-dolencias", label: "Gráficos" },
+    ]
     : [];
 
   // Recepción: mostrar SIEMPRE Inicio + Pacientes + Citas
   const links = isRecepcion
-    ? baseLinks.filter((l) => ["/dashboard", "/pacientes", "/citas"].includes(l.to))
+    ? baseLinks.filter((l) =>
+      ["/dashboard", "/pacientes", "/citas"].includes(l.to)
+    )
     : [...baseLinks, ...adminLinks];
-
-  // estilos reutilizables
-  const userChipStyle = {
-    fontSize: "0.8rem",
-    lineHeight: 1.2,
-    fontWeight: 500,
-    color: "var(--text)",
-    background: "var(--panel)",
-    border: "1px solid var(--border)",
-    borderRadius: "0.5rem",
-    padding: "0.5rem 0.75rem",
-    whiteSpace: "nowrap",
-  };
-
-  const logoutBtnStyle = {
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
-    color: "var(--text)",
-    borderRadius: "0.5rem",
-    padding: "0.5rem 0.75rem",
-    fontSize: "0.8rem",
-    fontWeight: 500,
-    lineHeight: 1.2,
-    cursor: "pointer",
-  };
 
   return (
     <>
@@ -85,31 +62,48 @@ export default function Layout() {
       >
         <div
           style={{
-            maxWidth: "1280px",
+            maxWidth: "1400px",
             margin: "0 auto",
-            padding: "10px 24px",
+            padding: "4px 48px",      // <<< menos alto arriba/abajo
             display: "grid",
             gridTemplateColumns: "auto 1fr auto",
             alignItems: "center",
-            columnGap: "16px",
+            columnGap: "80px",         // separación entre logo / nav / botones
           }}
         >
-          {/* IZQUIERDA: marca */}
+          {/* IZQUIERDA: logo */}
           <div style={{ justifySelf: "start" }}>
             <Link
               to="/dashboard"
               style={{
-                fontWeight: 800,
+                display: "block",
                 textDecoration: "none",
-                color: "var(--text)",
-                fontSize: "1.1rem",
-                letterSpacing: ".2px",
                 whiteSpace: "nowrap",
               }}
             >
-              Clínica FisioCare
+              <div
+                style={{
+                  height: 60,          // <<< MUCHO MÁS BAJO
+                  width: 260,
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  src="/logo_FisioCare.png"
+                  alt="Clínica FisioCare"
+                  style={{
+                    height: 180,       // <<< antes 220 → ahora más compacto
+                    width: "auto",
+                    display: "block",
+                    marginTop: 4,      // <<< menos desplazamiento
+                  }}
+                />
+              </div>
             </Link>
           </div>
+
 
           {/* CENTRO: navegación */}
           <nav
@@ -118,8 +112,8 @@ export default function Layout() {
               display: "flex",
               flexWrap: "wrap",
               justifyContent: "center",
-              gap: "12px 16px",
-              minHeight: "2rem",
+              gap: "18px 30px",
+              minHeight: "2.4rem",
             }}
           >
             {links.map((l) => (
@@ -128,9 +122,9 @@ export default function Layout() {
                 to={l.to}
                 className={({ isActive }) => (isActive ? "active" : "")}
                 style={{
-                  fontSize: "0.95rem",
-                  lineHeight: 1.2,
-                  fontWeight: 500,
+                  fontSize: "1.1rem",
+                  fontWeight: 630,
+                  lineHeight: 1.3,
                   display: "flex",
                   alignItems: "center",
                 }}
@@ -140,19 +134,30 @@ export default function Layout() {
             ))}
           </nav>
 
-          {/* DERECHA: usuario + salir + tema */}
+          {/* DERECHA: usuario + botones */}
           <div
             style={{
               justifySelf: "end",
               display: "flex",
               alignItems: "center",
-              flexWrap: "nowrap",
-              gap: "8px",
+              gap: "14px",
               minWidth: 0,
             }}
           >
             {user && (
-              <span style={userChipStyle}>
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  lineHeight: 1,
+                  fontWeight: 500,
+                  color: "var(--text)",
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "0.5rem",
+                  padding: "0.60rem 1rem",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {user.nombre || user.name} {roleRaw ? `(${roleRaw})` : ""}
               </span>
             )}
@@ -164,7 +169,16 @@ export default function Layout() {
                   setUser(null);
                   window.location.href = "/login";
                 }}
-                style={logoutBtnStyle}
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text)",
+                  borderRadius: "0.5rem",
+                  padding: "0.6rem 1rem",
+                  fontSize: "1rem",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
               >
                 Salir
               </button>

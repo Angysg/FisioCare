@@ -167,21 +167,16 @@ export default function AnaliticaDolencias() {
                     <XAxis
                       type="number"
                       allowDecimals={false}
-                      tickFormatter={formatShortNumber} // 🔹 1) abreviamos valores
+                      tickFormatter={formatShortNumber}
                     />
-                    <YAxis
-                      type="category"
-                      dataKey="label"
-                      width={180}
-                    />
+                    <YAxis type="category" dataKey="label" width={180} />
                     <Tooltip
-                      // mostramos en el tooltip el valor "real", sin abreviar
                       formatter={(value) => [value, "Casos"]}
                     />
                     <Bar
                       dataKey="count"
                       name="Casos"
-                      isAnimationActive={true} // 🔹 2) animación barras
+                      isAnimationActive={true}
                       animationDuration={800}
                       animationEasing="ease-out"
                     >
@@ -198,7 +193,7 @@ export default function AnaliticaDolencias() {
             )}
           </section>
 
-          {/* ===== GRÁFICO CIRCULAR ===== */}
+          {/* ===== GRÁFICO CIRCULAR (DONUT) ===== */}
           <section
             style={{
               background: "var(--panel)",
@@ -221,7 +216,7 @@ export default function AnaliticaDolencias() {
                   gap: 40,
                 }}
               >
-                {/* --- GRÁFICO --- */}
+                {/* --- GRÁFICO (DONUT) --- */}
                 <div
                   style={{
                     width: "100%",
@@ -238,9 +233,10 @@ export default function AnaliticaDolencias() {
                         nameKey="label"
                         cx="50%"
                         cy="50%"
+                        innerRadius={130}   //agujero interno → DONUT
                         outerRadius={290}
                         labelLine={false}
-                        isAnimationActive={true}      // 🔹 2) animación pastel
+                        isAnimationActive={true}
                         animationDuration={800}
                         animationEasing="ease-out"
                       >
@@ -269,7 +265,7 @@ export default function AnaliticaDolencias() {
                     style={{
                       marginBottom: 50,
                       textAlign: "center",
-                      fontSize: "1.4rem", // título grande
+                      fontSize: "1.4rem",
                       fontWeight: 300,
                     }}
                   >

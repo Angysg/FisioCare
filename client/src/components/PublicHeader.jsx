@@ -7,7 +7,7 @@ export default function PublicHeader() {
       style={{
         position: "sticky",
         top: 0,
-        zIndex: 10,
+        zIndex: 20,
         backdropFilter: "saturate(180%) blur(8px)",
         background: "var(--surface)",
         borderBottom: "1px solid var(--border)",
@@ -17,42 +17,50 @@ export default function PublicHeader() {
         style={{
           maxWidth: "1280px",
           margin: "0 auto",
-          padding: "10px 24px",
+          padding: "10px 32px",
           display: "grid",
           gridTemplateColumns: "auto 1fr auto",
           alignItems: "center",
-          columnGap: "16px",
+          columnGap: "32px",
         }}
       >
-        {/* IZQUIERDA: marca */}
+        {/* LOGO IZQUIERDA (igual que en Layout.jsx) */}
         <div style={{ justifySelf: "start" }}>
           <Link
-            to="/login"
+            to="/"
             style={{
-              fontWeight: 800,
+              display: "block",
               textDecoration: "none",
-              color: "var(--text)",
-              fontSize: "1.1rem",
-              letterSpacing: ".2px",
               whiteSpace: "nowrap",
             }}
           >
-            Clínica FisioCare
+            <div
+              style={{
+                height: 82,
+                width: 270,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src="/logo_FisioCare.png"
+                alt="Clínica FisioCare"
+                style={{
+                  height: 200,
+                  width: "auto",
+                  display: "block",
+                  marginTop: 10,
+                }}
+              />
+            </div>
           </Link>
         </div>
 
-        {/* CENTRO: vacío (no links en público) */}
-        <div />
+        <div></div>
 
-        {/* DERECHA: tema */}
-        <div
-          style={{
-            justifySelf: "end",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
+        {/* Botón de tema */}
+        <div style={{ justifySelf: "end" }}>
           <ThemeToggle />
         </div>
       </div>
