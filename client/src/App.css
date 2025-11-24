@@ -399,3 +399,57 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
   font-size: 0.9em !important;
   color: var(--muted);
 }
+
+
+/* =========================
+   Header responsive
+   ========================= */
+@media (max-width: 900px) {
+  .header-inner {
+    grid-template-columns: 1fr !important;  /* logo, menú y botones en columna */
+    padding: 8px 16px !important;
+    row-gap: 10px;
+    justify-items: center;
+  }
+
+  .header-left,
+  .header-right {
+    justify-self: center !important;
+  }
+
+  .header-right {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .logo-box {
+    height: 70px !important;
+    width: 240px !important;
+  }
+
+  .logo-box img {
+    height: 190px !important;
+    margin-top: 4px !important;
+  }
+
+  /* Menú un pelín más compacto en pantallas pequeñas */
+  .topnav a {
+    font-size: 0.95rem !important;
+  }
+}
+
+/* Aún más compacto en móviles muy pequeños */
+@media (max-width: 600px) {
+  .header-inner {
+    padding: 6px 10px !important;
+  }
+
+  .topnav {
+    gap: 8px 14px;
+  }
+
+  .topnav a {
+    font-size: 0.9rem !important;
+  }
+}
