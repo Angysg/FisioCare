@@ -224,7 +224,7 @@ export default function Vacaciones() {
           }`
         : v?.fisioName || undefined;
 
-      // NUEVO: añadimos workingDays al evento (útil para tooltips/listas)
+      // añadimos workingDays al evento
       const workingDays = countWorkingDays(v?.startDate, v?.endDate);
 
       return {
@@ -249,8 +249,9 @@ export default function Vacaciones() {
     );
   }, [events, isAdmin, selectedFisioId]);
 
-  // NUEVO: totales por persona (globales y con filtro aplicado)
+  // totales por persona (solo para admin)
   const totalsAll = useMemo(() => totalsByPerson(items), [items]);
+
   const totalsFiltered = useMemo(() => {
     if (!isAdmin || selectedFisioId === "ALL") return null;
     const filtered = items.filter(
@@ -260,6 +261,16 @@ export default function Vacaciones() {
     );
     return totalsByPerson(filtered);
   }, [items, isAdmin, selectedFisioId]);
+
+  // NUEVO: total de días trabajados SOLO para el fisioterapeuta logueado
+  // (la API ya le devuelve solo sus vacaciones, así que sumamos todas)
+  const myTotalWorkingDays = useMemo(() => {
+    if (!isFisio || isAdmin) return 0;
+    return (items || []).reduce(
+      (sum, v) => sum + countWorkingDays(v.startDate, v.endDate),
+      0
+    );
+  }, [items, isFisio, isAdmin]);
 
   // enviar solicitud (fisio)
   async function submitRequest(e) {
@@ -596,72 +607,88 @@ export default function Vacaciones() {
       {/* Totales */}
       <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
         <h2 className="sec-title sec-title--big">
-          Registro de vacaciones por persona (días laborales)
+          {isFisio && !isAdmin
+            ? "Recuento de vacaciones (días laborales)"
+            : "Registro de vacaciones por persona (días laborales)"}
         </h2>
 
-        {isAdmin &&
-          selectedFisioId !== "ALL" &&
-          totalsFiltered && (
-            <div className="mb-3">
-              <div className="text-sm text-[var(--muted)] mb-1">
-                Subtotal (filtro activo)
-              </div>
-              <div style={{ display: "grid", gap: 6 }}>
-                {Object.entries(totalsFiltered).map(
-                  ([name, total]) => (
-                    <div
-                      key={`flt-${name}`}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        fontSize: 15,
-                      }}
-                    >
-                      <span>{name}</span>
-                      <span
-                        style={{
-                          opacity: 0.6,
-                          margin: "0 8px",
-                        }}
-                      >
-                        :
-                      </span>
-                      <span style={{ opacity: 0.9 }}>
-                        <strong>{total}</strong> días
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-              <hr className="my-3" />
-            </div>
-          )}
+        {/* Vista FISIO: solo su total, sin nombre */}
+        {isFisio && !isAdmin ? (
+          <div
+            style={{
+              marginTop: 6,
+              fontSize: 18,
+            }}
+          >
+            <strong>{myTotalWorkingDays}</strong> días
+          </div>
+        ) : (
+          <>
+            {isAdmin &&
+              selectedFisioId !== "ALL" &&
+              totalsFiltered && (
+                <div className="mb-3">
+                  <div className="text-sm text-[var(--muted)] mb-1">
+                    Subtotal (filtro activo)
+                  </div>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {Object.entries(totalsFiltered).map(
+                      ([name, total]) => (
+                        <div
+                          key={`flt-${name}`}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: 15,
+                          }}
+                        >
+                          <span>{name}</span>
+                          <span
+                            style={{
+                              opacity: 0.6,
+                              margin: "0 8px",
+                            }}
+                          >
+                            :
+                          </span>
+                          <span style={{ opacity: 0.9 }}>
+                            <strong>{total}</strong> días
+                          </span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                  <hr className="my-3" />
+                </div>
+              )}
 
-        <div style={{ display: "grid", gap: 6 }}>
-          {Object.entries(totalsAll).map(([name, total]) => (
-            <div
-              key={name}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                fontSize: 18,
-              }}
-            >
-              <span>{name}</span>
-              <span
-                style={{
-                  opacity: 0.6,
-                  margin: "0 8px",
-                }}
-              >
-                →
-              </span>
-              <span style={{ opacity: 0.9 }}>
-                <strong>{total}</strong> días
-              </span>
+            <div style={{ display: "grid", gap: 6 }}>
+              {Object.entries(totalsAll).map(([name, total]) => (
+                <div
+                  key={name}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: 18,
+                  }}
+                >
+                  <span>{name}</span>
+                  <span
+                    style={{
+                      opacity: 0.6,
+                      margin: "0 8px",
+                    }}
+                  >
+                    →
+                  </span>
+                  <span style={{ opacity: 0.9 }}>
+                    <strong>{total}</strong> días
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </section>
 
       {/* Lista (vacaciones aprobadas) */}

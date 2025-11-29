@@ -27,7 +27,7 @@ export default function Pilates() {
       </h1>
 
       {/* Subtítulo temporal */}
-      <p style={{ fontSize: "1.2rem", opacity: 0.8 }}>
+      <p style={{ fontSize: "1.5rem", opacity: 0.8 }}>
         🏗️ Esta sección está en construcción.
         <br />
         Próximamente se añadirá la información y el seguimiento del grupo de Pilates.

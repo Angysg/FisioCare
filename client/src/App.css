@@ -294,9 +294,17 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
 .vacaciones-page .vac-calendar .rbc-toolbar { gap: 6px; flex-wrap: wrap; margin-bottom: 10px !important; }
 .vacaciones-page .vac-calendar .rbc-toolbar .rbc-btn-group button { margin-right: 4px; }
 .vacaciones-page .vac-form .actions { margin-top: 16px; }
-.vacaciones-page .filter-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.vacaciones-page .filter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
 @media (min-width: 768px) {
-  .vacaciones-page .filter-grid { grid-template-columns: 1fr auto; align-items: end; }
+  .vacaciones-page .filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    column-gap: 16px;
+  }
 }
 .vacaciones-page .vac-calendar > h2 + :not(.rbc-calendar) { display: none !important; }
 

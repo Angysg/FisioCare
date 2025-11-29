@@ -1,4 +1,4 @@
-// client/src/components/vacations/VacationList.jsx
+// client/src/components/vacations/VacationsList.jsx
 import { useEffect, useMemo, useState } from "react";
 import { apiListVacations, apiDeleteVacation } from "../../api";
 
@@ -30,10 +30,12 @@ function SoftButton({ children, onClick, variant = "action" }) {
         }
       : {
           color: "var(--link)",
-          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+          border:
+            "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
           background: "color-mix(in srgb, var(--link) 6%, transparent)",
           hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
-          focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+          focusRing:
+            "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
         };
 
   const [bg, setBg] = useState(palette.background);
@@ -53,7 +55,12 @@ function SoftButton({ children, onClick, variant = "action" }) {
       onMouseLeave={() => setBg(palette.background)}
       onFocus={() => setBg(palette.hoverBg)}
       onBlur={() => setBg(palette.background)}
-      style={{ ...base, color: palette.color, background: bg, border: palette.border }}
+      style={{
+        ...base,
+        color: palette.color,
+        background: bg,
+        border: palette.border,
+      }}
       onMouseDown={(e) => (e.currentTarget.style.boxShadow = palette.focusRing)}
       onMouseUp={(e) => (e.currentTarget.style.boxShadow = "none")}
     >
@@ -102,12 +109,19 @@ const HOLIDAYS_2025 = new Set([
 
 function toISO(d) {
   const date = d instanceof Date ? d : new Date(d);
-  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  return new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  )
     .toISOString()
     .slice(0, 10);
 }
 
-function countWorkingDays(startDate, endDate, holidays = HOLIDAYS_2025, weekend = new Set([0, 6])) {
+function countWorkingDays(
+  startDate,
+  endDate,
+  holidays = HOLIDAYS_2025,
+  weekend = new Set([0, 6])
+) {
   if (!startDate || !endDate) return 0;
   const s0 = new Date(startDate);
   const e0 = new Date(endDate);
@@ -125,17 +139,32 @@ function countWorkingDays(startDate, endDate, holidays = HOLIDAYS_2025, weekend 
 
 /* ======================================================================== */
 
+const MONTH_LABELS = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+
 export default function VacationsList({ reloadKey, role }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const isAdmin = (role || "").toLowerCase() === "admin";
+  const isFisio = (role || "").toLowerCase() === "fisioterapeuta";
 
-  const sorted = useMemo(
-    () => [...items].sort((a, b) => new Date(b.startDate) - new Date(a.startDate)),
-    [items]
-  );
+  // Filtros
+  const [selectedFisio, setSelectedFisio] = useState("ALL"); // solo admin lo usa
+  const [selectedMonth, setSelectedMonth] = useState("ALL"); // ambos roles
 
   async function load() {
     setLoading(true);
@@ -156,8 +185,85 @@ export default function VacationsList({ reloadKey, role }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadKey]);
 
+  // Opciones de fisioterapeuta (solo admin)
+  const fisioOptions = useMemo(() => {
+    if (!isAdmin) return [];
+    const map = new Map();
+    (items || []).forEach((v) => {
+      const id = (
+        v?.fisio?._id ||
+        v?.fisio ||
+        v?.fisioId ||
+        ""
+      ).toString();
+      if (!id) return;
+      const name =
+        (v?.fisio?.nombre || "") +
+        (v?.fisio?.apellidos ? " " + v.fisio.apellidos : "");
+      if (!map.has(id)) {
+        map.set(id, name || "Fisioterapeuta");
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [items, isAdmin]);
+
+  // Opciones de mes (según startDate) para ambos roles
+  const monthOptions = useMemo(() => {
+    const set = new Set();
+    (items || []).forEach((v) => {
+      const d = new Date(v.startDate);
+      if (isNaN(d)) return;
+      const key = `${d.getFullYear()}-${String(
+        d.getMonth() + 1
+      ).padStart(2, "0")}`;
+      set.add(key);
+    });
+    return Array.from(set)
+      .sort()
+      .map((key) => {
+        const [y, m] = key.split("-");
+        const monthIndex = Number(m) - 1;
+        const label = `${MONTH_LABELS[monthIndex] ?? m} ${y}`;
+        return { value: key, label };
+      });
+  }, [items]);
+
+  // Aplicar filtros
+  const filteredItems = useMemo(() => {
+    if (!items) return [];
+    return (items || []).filter((v) => {
+      // Filtro por fisio SOLO si es admin
+      if (isAdmin && selectedFisio !== "ALL") {
+        const id = (
+          v?.fisio?._id ||
+          v?.fisio ||
+          v?.fisioId ||
+          ""
+        ).toString();
+        if (id !== selectedFisio) return false;
+      }
+      // Filtro por mes (admin y fisio)
+      if (selectedMonth !== "ALL") {
+        const d = new Date(v.startDate);
+        if (isNaN(d)) return false;
+        const key = `${d.getFullYear()}-${String(
+          d.getMonth() + 1
+        ).padStart(2, "0")}`;
+        if (key !== selectedMonth) return false;
+      }
+      return true;
+    });
+  }, [items, isAdmin, selectedFisio, selectedMonth]);
+
+  const sorted = useMemo(
+    () =>
+      [...filteredItems].sort(
+        (a, b) => new Date(b.startDate) - new Date(a.startDate)
+      ),
+    [filteredItems]
+  );
+
   async function handleDelete(id) {
-    // Seguridad extra: por si alguien no admin llega a llamar a esto
     if (!isAdmin) {
       alert("No tienes permisos para eliminar vacaciones.");
       return;
@@ -174,7 +280,9 @@ export default function VacationsList({ reloadKey, role }) {
 
   const Wrapper = ({ children }) => (
     <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
-      <h2 className="sec-title sec-title--big">Listado de vacaciones</h2>
+      <h2 className="sec-title sec-title--big">
+        {isFisio && !isAdmin ? "Mis vacaciones" : "Listado de vacaciones"}
+      </h2>
       {children}
     </section>
   );
@@ -185,87 +293,229 @@ export default function VacationsList({ reloadKey, role }) {
         <p className="text-[var(--muted)]">Cargando…</p>
       </Wrapper>
     );
+
   if (error)
     return (
       <Wrapper>
         <p className="text-red-500">{error}</p>
       </Wrapper>
     );
-  if (!sorted.length)
-    return (
-      <Wrapper>
-        <p className="text-[var(--muted)]">No hay vacaciones registradas.</p>
-      </Wrapper>
-    );
 
+  // --- A partir de aquí SIEMPRE mostramos filtros, aunque no haya resultados ---
   return (
     <Wrapper>
-      <ul
-        style={{
-          listStyle: "none",
-          padding: 0,
-          margin: 0,
-          display: "grid",
-          gap: 12,
-        }}
-      >
-        {sorted.map((v) => {
-          const nombre =
-            (v.fisio?.nombre || "") + (v.fisio?.apellidos ? " " + v.fisio.apellidos : "");
-          const inicio = fmtDate(v.startDate);
-          const fin = fmtDate(v.endDate);
-
-          const workingDays = countWorkingDays(v.startDate, v.endDate);
-          const naturalDays = daysBetween(v.startDate, v.endDate); // por si lo quieres usar
-
-          return (
-            <li
-              key={v._id}
-              className="pac-item"
-              style={{
-                borderRadius: 12,
-                background: "var(--panel)",
-                border: "1px solid var(--border)",
-                boxShadow: "0 1px 8px rgba(0, 0, 0, 0.06)",
-              }}
+      {/* Filtros:
+          - Admin: fisio + mes (en grid, uno al lado del otro en pantallas grandes)
+          - Fisio: solo mes */}
+      {isAdmin && (
+        <div
+          className="filter-grid"
+          style={{
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            <label className="text-sm text-[var(--muted)]">
+              Filtrar por fisioterapeuta
+            </label>
+            <select
+              className="rounded-xl border bg-transparent px-3 py-2"
+              value={selectedFisio}
+              onChange={(e) => setSelectedFisio(e.target.value)}
             >
-              <div
+              <option value="ALL">Todos los fisioterapeutas</option>
+              {fisioOptions.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            <label className="text-sm text-[var(--muted)]">
+              Filtrar por mes
+            </label>
+            <select
+              className="rounded-xl border bg-transparent px-3 py-2"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value="ALL">Todos los meses</option>
+              {monthOptions.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      {isFisio && !isAdmin && (
+        <div
+          style={{
+            marginBottom: 16,
+            maxWidth: 260,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          <label className="text-sm text-[var(--muted)]">
+            Filtrar por mes
+          </label>
+          <select
+            className="rounded-xl border bg-transparent px-3 py-2"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+          >
+            <option value="ALL">Todos los meses</option>
+            {monthOptions.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Lista o mensaje vacío */}
+      {sorted.length === 0 ? (
+        <p className="text-[var(--muted)]">No hay vacaciones registradas.</p>
+      ) : (
+        <ul
+          style={{
+            listStyle: "none",
+            padding: 0,
+            margin: 0,
+            display: "grid",
+            gap: 12,
+          }}
+        >
+          {sorted.map((v) => {
+            const nombre =
+              (v.fisio?.nombre || "") +
+              (v.fisio?.apellidos ? " " + v.fisio.apellidos : "");
+            const inicio = fmtDate(v.startDate);
+            const fin = fmtDate(v.endDate);
+
+            const workingDays = countWorkingDays(v.startDate, v.endDate);
+            const naturalDays = daysBetween(v.startDate, v.endDate); // por si lo quieres usar
+
+            return (
+              <li
+                key={v._id}
+                className="pac-item"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 10,
-                  padding: "12px 14px",
-                  minHeight: 64,
+                  borderRadius: 12,
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  boxShadow: "0 1px 8px rgba(0, 0, 0, 0.06)",
                 }}
               >
-                <div>
-                  <div style={{ fontWeight: 700, color: "var(--text)", fontSize: 18 }}>
-                    {nombre || "Fisioterapeuta"}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    padding: "12px 14px",
+                    minHeight: 64,
+                  }}
+                >
+                  <div>
+                    {isAdmin ? (
+                      <>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text)",
+                            fontSize: 18,
+                          }}
+                        >
+                          {nombre || "Fisioterapeuta"}
+                        </div>
+                        <div
+                          style={{
+                            color: "var(--muted)",
+                            fontSize: 16,
+                          }}
+                        >
+                          {inicio} &nbsp;→&nbsp; {fin}
+                          &nbsp;·&nbsp;
+                          <strong>
+                            {workingDays}{" "}
+                            {workingDays === 1 ? "día" : "días"}
+                          </strong>
+                          {v.notes?.trim() && (
+                            <>
+                              {" "}
+                              &nbsp;·&nbsp;Notas: {v.notes.trim()}
+                            </>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      // Vista FISIO: días arriba, fechas abajo
+                      <>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text)",
+                            fontSize: 18,
+                          }}
+                        >
+                          <strong>
+                            {workingDays}{" "}
+                            {workingDays === 1 ? "día" : "días"}
+                          </strong>
+                        </div>
+                        <div
+                          style={{
+                            color: "var(--muted)",
+                            fontSize: 16,
+                          }}
+                        >
+                          {inicio} &nbsp;→&nbsp; {fin}
+                          {v.notes?.trim() && (
+                            <>
+                              {" "}
+                              &nbsp;·&nbsp;Notas: {v.notes.trim()}
+                            </>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <div style={{ color: "var(--muted)", fontSize: 16 }}>
-                    {inicio} &nbsp;→&nbsp; {fin}
-                    &nbsp;·&nbsp;
-                    <strong>
-                      {workingDays} {workingDays === 1 ? "día" : "días"}
-                    </strong>
-                    {/* Si quieres mostrar también los naturales, puedes descomentar: */}
-                    {/* &nbsp;<span className="opacity-70">({naturalDays} naturales)</span> */}
-                    {v.notes?.trim() && <> &nbsp;·&nbsp;Notas: {v.notes.trim()}</>}
-                  </div>
-                </div>
 
-                {/* Botón eliminar SOLO si es admin */}
-                {isAdmin && (
-                  <SoftButton variant="delete" onClick={() => handleDelete(v._id)}>
-                    Eliminar
-                  </SoftButton>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+                  {/* Botón eliminar SOLO si es admin */}
+                  {isAdmin && (
+                    <SoftButton
+                      variant="delete"
+                      onClick={() => handleDelete(v._id)}
+                    >
+                      Eliminar
+                    </SoftButton>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </Wrapper>
   );
 }
