@@ -352,7 +352,7 @@ export default function Citas() {
       </div>
 
       {/* FILA 1: calendario + formulario */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 480px", gap: 24 }}>
+      <div className="citas-main-grid">
         {/* Calendario */}
         <div style={{ background: "var(--card-bg, #fff)", borderRadius: 12, padding: 12 }}>
           {/* Controles de paginación de fisio */}
@@ -409,7 +409,7 @@ export default function Citas() {
       </div>
 
       {/* Listado semanal */}
-      <div style={{ background: "var(--card-bg, #fff)", borderRadius: 12, padding: 12 }}>
+      <div   className="appointments-week-list" style={{ background: "var(--card-bg, #fff)", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <h3 style={{ marginTop: 0, marginBottom: 8 }}>Próximas citas (semana visible)</h3>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

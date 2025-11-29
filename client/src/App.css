@@ -13,7 +13,7 @@
   /* ===== Tamaños globales de LISTADOS ===== */
   --list-font-size: 18px;       /* tamaño base de fila */
   --list-title-size: 18px;      /* tamaño para el nombre/título */
- --list-detail-boost: 0px;    /* escala del contenido expandido (.detalle) respecto al base */
+  --list-detail-boost: 0px;     /* escala del contenido expandido (.detalle) respecto al base */
   --list-row-padding-y: 14px;   /* aire vertical de cada tarjeta */
   --list-row-padding-x: 16px;   /* aire horizontal de cada tarjeta */
 
@@ -323,7 +323,7 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
 
 .table-actions { display: inline-flex; gap: 8px; }
 .vac-form button[type="submit"] { margin-top: 10px; }
-.vacaciones-page .calendar-block { margin-top: 28px !important; }
+.vacaciones-page .calendar-block { margin-top: 40px !important; }
 
 /* Evitar que las zonas del cuerpo se rompan letra a letra */
 .zones-grid span, label span {
@@ -404,7 +404,7 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
 /* =========================
    Header responsive
    ========================= */
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
   .header-inner {
     grid-template-columns: 1fr !important;  /* logo, menú y botones en columna */
     padding: 8px 16px !important;
@@ -452,4 +452,205 @@ button[disabled] { opacity: .6; cursor: not-allowed; }
   .topnav a {
     font-size: 0.9rem !important;
   }
+}
+
+
+/* =========================
+   Layout genérico 2 columnas
+   ========================= */
+
+.two-col-layout {
+  display: grid;
+  gap: 24px;
+}
+
+/* cabecera de 2 columnas (texto + filtros / formulario pequeñito) */
+.two-col-header {
+  display: grid;
+  gap: 24px;
+}
+
+/* A partir de 900px: dos columnas (1.4 / 1) */
+@media (min-width: 900px) {
+  .two-col-layout {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: flex-start;
+  }
+
+  .two-col-header {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: flex-end;
+  }
+}
+
+/* =========================
+   Citas: calendario + formulario
+   ========================= */
+
+.citas-main-grid {
+  display: grid;
+  gap: 24px;
+}
+
+/* móvil / tablet: 1 columna (se apilan) */
+.citas-main-grid > div {
+  min-width: 0;
+}
+
+/* escritorio: dos columnas (calendario + formulario) */
+@media (min-width: 900px) {
+  .citas-main-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 420px);
+    align-items: flex-start;
+  }
+}
+
+
+/* =============== Layout maestro-detalle reutilizable =============== */
+
+/* Variante: en móvil / tamaño medio el formulario se muestra antes que la lista */
+.mobile-form-first .col-form {
+  order: -1;
+}
+
+/* En escritorio quitamos el cambio de orden para que vuelva la lista a la izquierda */
+@media (min-width: 900px) {
+  .mobile-form-first .col-form,
+  .mobile-form-first .col-list {
+    order: 0;
+  }
+}
+
+
+
+
+/* Pacientes: en móvil queremos Crear -> Filtros -> Listado */
+.pacientes-layout {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .pacientes-layout {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: flex-start;
+  }
+}
+
+/* Orden interno en móvil */
+.pacientes-layout .pac-form {
+  order: -2;   /* 1º Crear paciente */
+}
+.pacientes-layout .pac-filters {
+  order: -1;   /* 2º Buscador / orden */
+}
+.pacientes-layout .pac-list {
+  order: 0;    /* 3º Listado */
+}
+
+/* En escritorio, volvemos al orden natural de columnas */
+@media (min-width: 900px) {
+  .pacientes-layout .pac-form,
+  .pacientes-layout .pac-filters,
+  .pacientes-layout .pac-list {
+    order: 0;
+  }
+}
+
+
+/* Fisioterapeutas: en móvil Crear -> Filtros -> Listado */
+.fisios-layout {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .fisios-layout {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: flex-start;
+  }
+}
+
+.fisios-layout .fisio-form {
+  order: -2;
+}
+.fisios-layout .fisio-filters {
+  order: -1;
+}
+.fisios-layout .fisio-list {
+  order: 0;
+}
+
+@media (min-width: 900px) {
+  .fisios-layout .fisio-form,
+  .fisios-layout .fisio-filters,
+  .fisios-layout .fisio-list {
+    order: 0;
+  }
+}
+
+/* Evitar que se corten los botones del listado semanal de citas */
+.appointments-week-list {
+  overflow-x: auto;
+}
+
+
+
+/* =========================
+   Leyenda donut Analítica Dolencias
+   ========================= */
+
+.pie-legend {
+  column-count: 2;
+  column-gap: 50px;
+  max-width: 850px;
+}
+
+/* En pantallas pequeñas, una sola columna para que no se apiñen */
+@media (max-width: 700px) {
+  .pie-legend {
+    column-count: 1;
+    max-width: 520px;
+  }
+}
+
+
+/* ============================================================
+   SEPARACIÓN ENTRE BLOQUES (Vacaciones + Seguimientos)
+   ============================================================ */
+
+/* ---- Vacaciones: más aire entre secciones ---- */
+.vacaciones-page section {
+  margin-bottom: 56px !important;   /* más aire vertical */
+}
+
+.vac-top-grid > section {
+  margin-bottom: 48px !important;
+}
+
+/* Cuando ya está en dos columnas (pantalla grande) */
+@media (min-width: 1100px) {
+  .vac-top-grid {
+    gap: 56px !important;  /* más espacio horizontal */
+  }
+}
+
+/* ---- Seguimientos: separar columnas y bloques ---- */
+.seg-header-row {
+  margin-bottom: 30px !important;
+}
+
+.seg-header-row + .two-col-layout {
+  margin-top: 20px !important;
+}
+
+/* Espacio entre tarjeta de filtros y tarjeta de crear */
+.two-col-layout .col-list,
+.two-col-layout .col-form {
+  gap: 28px !important;
+}
+
+.two-col-layout {
+  row-gap: 32px !important;
+  column-gap: 40px !important;
 }

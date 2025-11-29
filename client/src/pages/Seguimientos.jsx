@@ -323,9 +323,8 @@ export default function Seguimientos() {
       arr.sort((a, b) => {
         const nameA = (
           a.paciente
-            ? `${a.paciente?.nombre || ""} ${
-                a.paciente?.apellidos || ""
-              }`
+            ? `${a.paciente?.nombre || ""} ${a.paciente?.apellidos || ""
+            }`
             : a.pacienteNombre || ""
         )
           .trim()
@@ -333,9 +332,8 @@ export default function Seguimientos() {
 
         const nameB = (
           b.paciente
-            ? `${b.paciente?.nombre || ""} ${
-                b.paciente?.apellidos || ""
-              }`
+            ? `${b.paciente?.nombre || ""} ${b.paciente?.apellidos || ""
+            }`
             : b.pacienteNombre || ""
         )
           .trim()
@@ -415,29 +413,12 @@ export default function Seguimientos() {
         SEGUIMIENTO Y VALORACIÓN
       </h1>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr",
-          alignItems: "end",
-          gap: 24,
-          marginBottom: 8,
-        }}
-      >
-        <h3 style={{ margin: 0 }}>Filtros</h3>
-        <h3 style={{ margin: 0 }}>Crear seguimiento</h3>
-      </div>
+      <div className="two-col-layout mobile-form-first">
+        {/* ===== Columna LISTADO + FILTROS ===== */}
+        <div className="col-list">
+          <h3 style={{ marginTop: 0 }}>Filtros</h3>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr",
-          gap: 24,
-        }}
-      >
-        {/* Columna izquierda */}
-        <div>
-          <div style={{ display: "grid", gap: 10, marginBottom: 12 }}>
+          <div style={{ display: "grid", gap: 10, marginBottom: 50 }}>
             <input
               placeholder="Buscar por paciente, fisio o comentario..."
               value={query}
@@ -569,8 +550,10 @@ export default function Seguimientos() {
           </ul>
         </div>
 
-        {/* Columna derecha: Crear */}
-        <div>
+        {/* ===== Columna FORMULARIO (primera en móvil) ===== */}
+        <div className="col-form">
+          <h3 style={{ marginTop: 0 }}>Crear seguimiento</h3>
+
           <form
             onSubmit={crearSeguimiento}
             className="card"

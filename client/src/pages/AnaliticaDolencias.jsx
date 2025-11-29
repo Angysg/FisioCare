@@ -170,9 +170,7 @@ export default function AnaliticaDolencias() {
                       tickFormatter={formatShortNumber}
                     />
                     <YAxis type="category" dataKey="label" width={180} />
-                    <Tooltip
-                      formatter={(value) => [value, "Casos"]}
-                    />
+                    <Tooltip formatter={(value) => [value, "Casos"]} />
                     <Bar
                       dataKey="count"
                       name="Casos"
@@ -220,9 +218,11 @@ export default function AnaliticaDolencias() {
                 <div
                   style={{
                     width: "100%",
-                    maxWidth: 900,
-                    height: 630,
+                    maxWidth: 520,
                     margin: "0 auto",
+                    aspectRatio: "1 / 1",     // siempre cuadrado
+                    minHeight: 260,
+                    maxHeight: 420,
                   }}
                 >
                   <ResponsiveContainer width="100%" height="100%">
@@ -233,8 +233,8 @@ export default function AnaliticaDolencias() {
                         nameKey="label"
                         cx="50%"
                         cy="50%"
-                        innerRadius={130}   //agujero interno → DONUT
-                        outerRadius={290}
+                        innerRadius="55%"   // agujero interno → DONUT
+                        outerRadius="90%"
                         labelLine={false}
                         isAnimationActive={true}
                         animationDuration={800}
@@ -274,13 +274,11 @@ export default function AnaliticaDolencias() {
                   </p>
 
                   <ul
+                    className="pie-legend"
                     style={{
                       margin: "0 auto",
                       paddingLeft: 0,
                       listStyle: "none",
-                      columnCount: 2,
-                      columnGap: 50,
-                      maxWidth: 850,
                     }}
                   >
                     {dataPretty.map((row, i) => (

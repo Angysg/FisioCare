@@ -174,7 +174,7 @@ export default function VacationsList({ reloadKey, role }) {
 
   const Wrapper = ({ children }) => (
     <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
-      <h2 className="sec-title sec-title--big">Listado</h2>
+      <h2 className="sec-title sec-title--big">Listado de vacaciones</h2>
       {children}
     </section>
   );

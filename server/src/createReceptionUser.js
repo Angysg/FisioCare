@@ -27,7 +27,7 @@ async function createReception() {
       role: 'recepcion',
     });
 
-    console.log('🎉 Usuario de recepción creado con éxito:');
+    console.log('Usuario de recepción creado con éxito:');
     console.log(`Email: ${email}`);
     console.log(`Contraseña: ${password}`);
   } catch (err) {

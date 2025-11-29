@@ -24,23 +24,23 @@ function AdjButton({ children, onClick, variant = "action" }) {
   const palette =
     variant === "delete"
       ? {
-        color: "#b91c1c",
-        border: "1px solid rgba(185,28,28,0.35)",
-        background: "rgba(185,28,28,0.05)",
-        hoverBg: "rgba(185,28,28,0.12)",
-        focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
-      }
+          color: "#b91c1c",
+          border: "1px solid rgba(185,28,28,0.35)",
+          background: "rgba(185,28,28,0.05)",
+          hoverBg: "rgba(185,28,28,0.12)",
+          focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
+        }
       : {
-        color: "var(--link)",
-        border:
-          "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-        background:
-          "color-mix(in srgb, var(--link) 6%, transparent)",
-        hoverBg:
-          "color-mix(in srgb, var(--link) 15%, transparent)",
-        focusRing:
-          "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
-      };
+          color: "var(--link)",
+          border:
+            "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+          background:
+            "color-mix(in srgb, var(--link) 6%, transparent)",
+          hoverBg:
+            "color-mix(in srgb, var(--link) 15%, transparent)",
+          focusRing:
+            "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+        };
 
   const [bg, setBg] = useState(palette.background);
 
@@ -212,7 +212,7 @@ function PacienteRow({
             className="detalle"
             style={{
               padding: "0 14px 14px 14px",
-              fontSize: "calc(var(--list-font-size) * 0.90)", 
+              fontSize: "calc(var(--list-font-size) * 0.90)",
             }}
           >
             <div
@@ -247,7 +247,7 @@ function PacienteRow({
                     <i style={{ color: "var(--muted)" }}>
                       Sin antecedentes
                     </i>
-                  )}
+                    )}
               </div>
             </div>
 
@@ -531,7 +531,7 @@ export default function Pacientes() {
   }
 
   async function eliminarAdjuntoDeLista(adj) {
-    // opcional: si quieres botón extra, aquí
+    // opcional
   }
 
   function editarPaciente(p) {
@@ -548,54 +548,52 @@ export default function Pacientes() {
     >
       <h1 className="page-title">PACIENTES</h1>
 
-      <div
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <input
-          placeholder="Buscar por nombre/apellidos/email..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ width: 380 }}
-        />
-        <button onClick={load}>Buscar</button>
-        <div
-          style={{
-            marginLeft: 8,
-            display: "flex",
-            gap: 6,
-            alignItems: "center",
-          }}
-        >
-          <span style={{ color: "var(--muted)" }}>Orden:</span>
-          <button
-            onClick={() => setOrder("alpha")}
-            disabled={order === "alpha"}
+      <div className="two-col-layout mobile-form-first">
+        {/* ===== Columna LISTADO + FILTROS (izquierda en escritorio) ===== */}
+        <div className="col-list">
+          {/* Filtros */}
+          <div
+            style={{
+              marginBottom: 45,
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
           >
-            Alfabético
-          </button>
-          <button
-            onClick={() => setOrder("date")}
-            disabled={order === "date"}
-          >
-            Fecha
-          </button>
-        </div>
-      </div>
+            <input
+              placeholder="Buscar por nombre/apellidos/email..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ width: 380, maxWidth: "100%" }}
+            />
+            <button onClick={load}>Buscar</button>
+            <div
+              style={{
+                marginLeft: 8,
+                display: "flex",
+                gap: 6,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <span style={{ color: "var(--muted)" }}>Orden:</span>
+              <button
+                onClick={() => setOrder("alpha")}
+                disabled={order === "alpha"}
+              >
+                Alfabético
+              </button>
+              <button
+                onClick={() => setOrder("date")}
+                disabled={order === "date"}
+              >
+                Fecha
+              </button>
+            </div>
+          </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr",
-          gap: 24,
-        }}
-      >
-        <div>
+          {/* Listado */}
           <h3>Listado</h3>
           <ul
             id="listaPacientes"
@@ -635,7 +633,8 @@ export default function Pacientes() {
           </ul>
         </div>
 
-        <div>
+        {/* ===== Columna FORMULARIO (derecha en escritorio, 1ª en móvil) ===== */}
+        <div className="col-form">
           <h3>Crear paciente</h3>
           <form
             onSubmit={crearPaciente}
@@ -762,7 +761,7 @@ export default function Pacientes() {
           <div style={{ marginTop: 8 }}>
             <button
               onClick={subirAdjunto}
-              disabled={!(selected && file)}
+              disabled={botonAdjuntoDeshabilitado}
             >
               Subir adjunto
             </button>

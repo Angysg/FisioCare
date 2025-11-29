@@ -28,19 +28,19 @@ function AdjButton({ children, onClick, variant = "action", disabled = false, ti
   const palette =
     variant === "delete"
       ? {
-        color: "#b91c1c",
-        border: "1px solid rgba(185,28,28,0.35)",
-        background: "rgba(185,28,28,0.05)",
-        hoverBg: "rgba(185,28,28,0.12)",
-        focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
-      }
+          color: "#b91c1c",
+          border: "1px solid rgba(185,28,28,0.35)",
+          background: "rgba(185,28,28,0.05)",
+          hoverBg: "rgba(185,28,28,0.12)",
+          focusRing: "0 0 0 3px rgba(185,28,28,0.25)",
+        }
       : {
-        color: "var(--link)",
-        border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
-        background: "color-mix(in srgb, var(--link) 6%, transparent)",
-        hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
-        focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
-      };
+          color: "var(--link)",
+          border: "1px solid color-mix(in srgb, var(--link) 45%, transparent)",
+          background: "color-mix(in srgb, var(--link) 6%, transparent)",
+          hoverBg: "color-mix(in srgb, var(--link) 15%, transparent)",
+          focusRing: "0 0 0 3px color-mix(in srgb, var(--link) 35%, transparent)",
+        };
   const [bg, setBg] = useState(palette.background);
   const safe = (fn) => (e) => { if (!disabled) fn?.(e); };
 
@@ -270,31 +270,52 @@ export default function FisioterapeutasPage() {
     <main className="container" style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
       <h1 className="page-title">FISIOTERAPEUTAS</h1>
 
-      <form
-        onSubmit={buscar}
-        style={{ marginBottom: 16, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
-      >
-        <input
-          placeholder="Buscar por nombre/apellidos/email..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          style={{ width: 380 }}
-        />
-        <button disabled={loading} type="submit">{loading ? "Buscando…" : "Buscar"}</button>
+      <div className="two-col-layout mobile-form-first">
+        {/* ===== Columna LISTADO + FILTROS ===== */}
+        <div className="col-list">
+          {/* Filtros */}
+          <form
+            onSubmit={buscar}
+            style={{ marginBottom: 45, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
+          >
+            <input
+              placeholder="Buscar por nombre/apellidos/email..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              style={{ width: 380, maxWidth: "100%" }}
+            />
+            <button disabled={loading} type="submit">
+              {loading ? "Buscando…" : "Buscar"}
+            </button>
 
-        <div style={{ marginLeft: 8, display: "flex", gap: 6, alignItems: "center" }}>
-          <span style={{ color: "var(--muted)" }}>Orden:</span>
-          <button onClick={() => setSort("alpha")} type="button" disabled={sort === "alpha"}>Alfabético</button>
-          <button onClick={() => setSort("date")} type="button" disabled={sort === "date"}>Fecha</button>
-        </div>
-      </form>
+            <div style={{ marginLeft: 8, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ color: "var(--muted)" }}>Orden:</span>
+              <button onClick={() => setSort("alpha")} type="button" disabled={sort === "alpha"}>
+                Alfabético
+              </button>
+              <button onClick={() => setSort("date")} type="button" disabled={sort === "date"}>
+                Fecha
+              </button>
+            </div>
+          </form>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
-        <div>
+          {/* Listado */}
           <h3>Listado</h3>
-          <ul className="adj-list" style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12, fontSize: "var(--list-font-size)", }}>
+          <ul
+            className="adj-list"
+            style={{
+              listStyle: "none",
+              padding: 0,
+              margin: 0,
+              display: "grid",
+              gap: 12,
+              fontSize: "var(--list-font-size)",
+            }}
+          >
             {loading && <li className="text-[var(--muted)]">Cargando…</li>}
-            {!loading && list.length === 0 && <li className="text-[var(--muted)]">No hay fisioterapeutas registrados.</li>}
+            {!loading && list.length === 0 && (
+              <li className="text-[var(--muted)]">No hay fisioterapeutas registrados.</li>
+            )}
             {!loading &&
               list.map((f) => {
                 const open = selected?._id === f._id;
@@ -313,9 +334,14 @@ export default function FisioterapeutasPage() {
           </ul>
         </div>
 
-        <div>
+        {/* ===== Columna FORMULARIO ===== */}
+        <div className="col-form">
           <h3>Crear fisioterapeuta</h3>
-          <form onSubmit={crearFisio} className="card" style={{ display: "grid", gap: 10, marginBottom: 24 }}>
+          <form
+            onSubmit={crearFisio}
+            className="card"
+            style={{ display: "grid", gap: 10, marginBottom: 24 }}
+          >
             <div className="form-field">
               <label>Nombre</label>
               <input
@@ -383,7 +409,9 @@ export default function FisioterapeutasPage() {
               </div>
             )}
 
-            <button type="submit" style={{ width: "100%" }}>Crear</button>
+            <button type="submit" style={{ width: "100%" }}>
+              Crear
+            </button>
           </form>
         </div>
       </div>
