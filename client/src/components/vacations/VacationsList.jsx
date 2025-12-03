@@ -1,4 +1,5 @@
 // client/src/components/vacations/VacationsList.jsx
+
 import { useEffect, useMemo, useState } from "react";
 import { apiListVacations, apiDeleteVacation } from "../../api";
 
@@ -19,6 +20,7 @@ function SoftButton({ children, onClick, variant = "action" }) {
     transition: "background 0.2s, box-shadow 0.2s",
   };
 
+  // Dos estilos: normal (links) y "delete" (rojo)
   const palette =
     variant === "delete"
       ? {
@@ -73,6 +75,7 @@ function SoftButton({ children, onClick, variant = "action" }) {
 function fmtDate(d) {
   if (!d) return "—";
   try {
+    // Fecha corta en español
     return new Date(d).toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "short",
@@ -107,6 +110,7 @@ const HOLIDAYS_2025 = new Set([
   "2025-12-25",
 ]);
 
+// Pasa una fecha a formato ISO (YYYY-MM-DD) sin zona horaria
 function toISO(d) {
   const date = d instanceof Date ? d : new Date(d);
   return new Date(
@@ -116,6 +120,7 @@ function toISO(d) {
     .slice(0, 10);
 }
 
+// Recorre día a día entre start y end y cuenta solo laborables
 function countWorkingDays(
   startDate,
   endDate,
@@ -139,6 +144,7 @@ function countWorkingDays(
 
 /* ======================================================================== */
 
+// Etiquetas de los meses para los filtros
 const MONTH_LABELS = [
   "enero",
   "febrero",
@@ -155,17 +161,18 @@ const MONTH_LABELS = [
 ];
 
 export default function VacationsList({ reloadKey, role }) {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([]);     // lista de vacaciones
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const isAdmin = (role || "").toLowerCase() === "admin";
   const isFisio = (role || "").toLowerCase() === "fisioterapeuta";
 
-  // Filtros
+  // Filtros de la parte superior
   const [selectedFisio, setSelectedFisio] = useState("ALL"); // solo admin lo usa
   const [selectedMonth, setSelectedMonth] = useState("ALL"); // ambos roles
 
+  // Carga inicial de vacaciones desde la API
   async function load() {
     setLoading(true);
     setError("");
@@ -180,6 +187,7 @@ export default function VacationsList({ reloadKey, role }) {
     }
   }
 
+  // Se dispara al montar el componente o cuando cambia reloadKey
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -204,10 +212,11 @@ export default function VacationsList({ reloadKey, role }) {
         map.set(id, name || "Fisioterapeuta");
       }
     });
+    // Devolvemos { id, name } únicos para el select
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [items, isAdmin]);
 
-  // Opciones de mes (según startDate) para ambos roles
+  // Opciones de mes a partir de startDate (para ambos roles)
   const monthOptions = useMemo(() => {
     const set = new Set();
     (items || []).forEach((v) => {
@@ -228,7 +237,7 @@ export default function VacationsList({ reloadKey, role }) {
       });
   }, [items]);
 
-  // Aplicar filtros
+  // Aplicamos filtros de fisio (admin) y mes (todos)
   const filteredItems = useMemo(() => {
     if (!items) return [];
     return (items || []).filter((v) => {
@@ -255,6 +264,7 @@ export default function VacationsList({ reloadKey, role }) {
     });
   }, [items, isAdmin, selectedFisio, selectedMonth]);
 
+  // Ordenamos por fecha de inicio (las más recientes primero)
   const sorted = useMemo(
     () =>
       [...filteredItems].sort(
@@ -263,6 +273,7 @@ export default function VacationsList({ reloadKey, role }) {
     [filteredItems]
   );
 
+  // Eliminar vacaciones (solo admin)
   async function handleDelete(id) {
     if (!isAdmin) {
       alert("No tienes permisos para eliminar vacaciones.");
@@ -278,6 +289,7 @@ export default function VacationsList({ reloadKey, role }) {
     }
   }
 
+  // Wrapper para reutilizar el mismo layout en todos los estados
   const Wrapper = ({ children }) => (
     <section className="rounded-2xl border bg-[var(--panel)] p-5 md:p-6">
       <h2 className="sec-title sec-title--big">
@@ -287,6 +299,7 @@ export default function VacationsList({ reloadKey, role }) {
     </section>
   );
 
+  // Estado de carga
   if (loading)
     return (
       <Wrapper>
@@ -294,6 +307,7 @@ export default function VacationsList({ reloadKey, role }) {
       </Wrapper>
     );
 
+  // Estado de error
   if (error)
     return (
       <Wrapper>
@@ -305,7 +319,7 @@ export default function VacationsList({ reloadKey, role }) {
   return (
     <Wrapper>
       {/* Filtros:
-          - Admin: fisio + mes (en grid, uno al lado del otro en pantallas grandes)
+          - Admin: fisio + mes
           - Fisio: solo mes */}
       {isAdmin && (
         <div
@@ -314,6 +328,7 @@ export default function VacationsList({ reloadKey, role }) {
             marginBottom: 16,
           }}
         >
+          {/* Filtro por fisioterapeuta */}
           <div
             style={{
               display: "flex",
@@ -338,6 +353,7 @@ export default function VacationsList({ reloadKey, role }) {
             </select>
           </div>
 
+          {/* Filtro por mes (admin) */}
           <div
             style={{
               display: "flex",
@@ -364,6 +380,7 @@ export default function VacationsList({ reloadKey, role }) {
         </div>
       )}
 
+      {/* Filtro por mes para el rol fisioterapeuta */}
       {isFisio && !isAdmin && (
         <div
           style={{
@@ -392,7 +409,7 @@ export default function VacationsList({ reloadKey, role }) {
         </div>
       )}
 
-      {/* Lista o mensaje vacío */}
+      {/* Lista o mensaje si no hay resultados */}
       {sorted.length === 0 ? (
         <p className="text-[var(--muted)]">No hay vacaciones registradas.</p>
       ) : (
@@ -413,7 +430,7 @@ export default function VacationsList({ reloadKey, role }) {
             const fin = fmtDate(v.endDate);
 
             const workingDays = countWorkingDays(v.startDate, v.endDate);
-            const naturalDays = daysBetween(v.startDate, v.endDate); // por si lo quieres usar
+            const naturalDays = daysBetween(v.startDate, v.endDate); // por si lo quieres mencionar
 
             return (
               <li
@@ -438,6 +455,7 @@ export default function VacationsList({ reloadKey, role }) {
                 >
                   <div>
                     {isAdmin ? (
+                      // Vista admin: nombre del fisio + fechas + días
                       <>
                         <div
                           style={{
@@ -469,7 +487,7 @@ export default function VacationsList({ reloadKey, role }) {
                         </div>
                       </>
                     ) : (
-                      // Vista FISIO: días arriba, fechas abajo
+                      // Vista fisio: destaca los días arriba
                       <>
                         <div
                           style={{
@@ -501,7 +519,7 @@ export default function VacationsList({ reloadKey, role }) {
                     )}
                   </div>
 
-                  {/* Botón eliminar SOLO si es admin */}
+                  {/* Botón eliminar SOLO para admin */}
                   {isAdmin && (
                     <SoftButton
                       variant="delete"

@@ -1,10 +1,17 @@
+// Controlador de citas (appointments)
+// Gestiona: listar, crear, actualizar, eliminar citas y generar eventos para el calendario
+
 import Appointment from '../models/Appointment.js';
 import { Vacation } from '../models/Vacation.js';
 import * as PacienteMod from '../models/Paciente.js';
-// Paciente exporta default o { Paciente }; compat:
+
+// Compatibilidad: Paciente puede exportar por defecto o por nombre
 const Paciente = PacienteMod.default || PacienteMod.Paciente;
 
-// helper robusto para fechas de query (?start=...&end=...) corrigiendo espacios
+/* ==============================
+   HELPER: convertir fechas de query (?start=...&end=...)
+   Corrige espacios transformándolos en "+"
+   ============================== */
 const parseQDate = (v) => {
   if (!v) return null;
   const s = String(v).replace(' ', '+');
@@ -12,9 +19,11 @@ const parseQDate = (v) => {
   return isNaN(d) ? null : d;
 };
 
-/* ==== HELPERS PARA TRAMOS DE 30 MINUTOS ==== */
+/* =====================================================
+   HELPERS PARA TRABAJAR CON TRAMOS DE 30 MINUTOS
+   ===================================================== */
 
-// redondea una fecha al tramo de media hora más cercano (:00 o :30)
+// Redondea una fecha al tramo de media hora más cercano (:00 o :30)
 const roundToHalfHour = (date) => {
   const d = new Date(date);
   if (!(d instanceof Date) || isNaN(d)) return d;
@@ -33,7 +42,7 @@ const roundToHalfHour = (date) => {
   return d;
 };
 
-// garantiza que el rango sea múltiplo de 30 min, mínimo 30 min
+// Ajusta el rango (start/end) para garantizar que sea múltiplo de 30 minutos
 const ensureHalfHourRange = (start, end) => {
   let s = roundToHalfHour(start);
   let e = new Date(end);
@@ -45,24 +54,33 @@ const ensureHalfHourRange = (start, end) => {
   let diffMin = Math.round((e - s) / 60000);
   if (diffMin < 30) diffMin = 30;
 
-  // redondeamos a múltiplo de 30
+  // Redondeo a múltiplos de 30 min
   const steps = Math.max(1, Math.round(diffMin / 30));
   e = new Date(s.getTime() + steps * 30 * 60000);
 
   return [s, e];
 };
 
-// LIST
+/* =====================================================
+   LISTAR CITAS
+   GET /appointments?physio=...&from=...&to=...
+   ===================================================== */
 export async function list(req, res) {
   try {
     const { physio, from, to } = req.query;
     const q = {};
+
+    // Filtrar por fisioterapeuta
     if (physio) q.physio = physio;
+
+    // Filtrar por rango de fechas
     if (from || to) {
       q.start = {};
       if (from) q.start.$gte = parseQDate(from) ?? new Date(from);
       if (to)   q.start.$lte = parseQDate(to)   ?? new Date(to);
     }
+
+    // Obtener citas y rellenar paciente y fisio
     const items = await Appointment.find(q)
       .populate('patient','nombre apellidos')
       .populate('physio','nombre apellidos color')
@@ -75,7 +93,15 @@ export async function list(req, res) {
   }
 }
 
-// FEED PARA FULLCALENDAR
+/* =====================================================
+   EVENTOS PARA FULLCALENDAR
+   GET /appointments/events?start=...&end=...
+   Devuelve eventos ya formateados para el calendario
+   ===================================================== */
+   /**
+    * FullCalendar necesita un formato específico, así que este endpoint transforma las citas en ese formato. 
+    * Además, acorta automáticamente el nombre del paciente mostrando solo iniciales
+    */
 export async function events(req, res) {
   try {
     const startD = parseQDate(req.query.start);
@@ -86,7 +112,7 @@ export async function events(req, res) {
       return res.status(400).json({ message: 'start y end inválidos' });
     }
 
-    // aquí ya usas correctamente < y > para solapamiento
+    // Buscar citas que solapen cualquier parte del rango solicitado
     const q = { start: { $lt: endD }, end: { $gt: startD } };
     if (physio) q.physio = physio;
 
@@ -95,14 +121,16 @@ export async function events(req, res) {
       .populate('physio','nombre apellidos color')
       .lean();
 
+    // Transformar los resultados a formato FullCalendar
     const events = apps.map(a => {
-      // nombre completo del paciente
+      // Nombre completo del paciente
       const pName = a.patient
         ? `${a.patient?.nombre ?? ''} ${a.patient?.apellidos ?? ''}`.trim()
         : (a.patientName || '');
+
       const safeTitle = (pName || a.title || 'Sesión').trim();
 
-      // Versión corta para el CALENDARIO: nombre + iniciales de apellidos
+      // Crear título abreviado para el calendario (nombre + iniciales)
       let shortTitle = safeTitle;
       if (safeTitle) {
         const parts = safeTitle.split(/\s+/).filter(Boolean);
@@ -115,12 +143,10 @@ export async function events(req, res) {
 
       return {
         id: String(a._id),
-        // en el calendario se verá la versión corta
         title: shortTitle,
         start: a.start,
         end: a.end,
         extendedProps: {
-          // guardamos el título completo por si hace falta
           fullTitle: safeTitle,
           physioId: a.physio?._id || a.physio,
           physioName: `${a.physio?.nombre ?? ''} ${a.physio?.apellidos ?? ''}`.trim(),
@@ -138,14 +164,17 @@ export async function events(req, res) {
   }
 }
 
-// CREATE (con bloqueo por vacaciones y solape)
+/* =====================================================
+   CREAR CITA
+   POST /appointments
+   Validación: vacaciones, solapamiento, franjas de 30 min
+   ===================================================== */
 export async function create(req, res) {
   try {
     const {
       title = 'Sesión',
-      // ahora aceptamos patientId (opcional), patientName (obligatorio) y alta rápida
-      patient: patientId,
-      patientName,
+      patient: patientId,   // puede venir ID de paciente
+      patientName,          // o sólo nombre + alta rápida
       createPatientIfMissing = false,
       physio, start, end, duration,
       notes = '',
@@ -158,15 +187,16 @@ export async function create(req, res) {
       });
     }
 
+    // Calcular fechas
     let startDate = new Date(start);
     let endDate = end
       ? new Date(end)
       : new Date(startDate.getTime() + (Number(duration) || 30) * 60000);
 
-    // forzamos a franjas de 30 minutos
+    // Forzar franjas de 30 minutos
     [startDate, endDate] = ensureHalfHourRange(startDate, endDate);
 
-    // validación básica de rango horario
+    // Validación del rango horario
     if (!(startDate instanceof Date) || isNaN(startDate)
       || !(endDate instanceof Date) || isNaN(endDate)
       || endDate <= startDate) {
@@ -175,7 +205,9 @@ export async function create(req, res) {
       });
     }
 
-    // NO permitir cita si el fisio está de vacaciones
+    // Rechazar cita si el fisioterapeuta está de vacaciones
+    //Antes de crear una cita, el sistema busca en la colección Vacation si el fisioterapeuta tiene vacaciones que se solapen con ese rango horario.
+    //Si detecta que está de vacaciones, bloquea la creación automáticamente.
     const inVacation = await Vacation.exists({
       fisio: physio,
       startDate: { $lt: endDate },
@@ -187,7 +219,8 @@ export async function create(req, res) {
       });
     }
 
-    // BLOQUEO de solapamientos (permite citas pegadas)
+    // Bloquear solapamientos
+    //Si existe una cita que empieza antes de que termine la nueva, y termina después de que empiece, significa que hay un solapamiento y se bloquea.
     const overlapping = await Appointment.exists({
       physio,
       start: { $lt: endDate },
@@ -199,7 +232,7 @@ export async function create(req, res) {
       });
     }
 
-    // Resolver/enlazar paciente si viene o si hay alta rápida
+    // Crear paciente (ID directo o alta rápida)
     let patientRef = null;
     if (patientId) {
       patientRef = patientId;
@@ -211,6 +244,7 @@ export async function create(req, res) {
       patientRef = p._id;
     }
 
+    // Crear cita
     const app = await Appointment.create({
       title,
       patient: patientRef || undefined,
@@ -222,6 +256,7 @@ export async function create(req, res) {
       createdBy
     });
 
+    // Devolver cita con populate (como el JOIN)
     const populated = await Appointment.findById(app._id)
       .populate('patient','nombre apellidos')
       .populate('physio','nombre apellidos color');
@@ -233,6 +268,15 @@ export async function create(req, res) {
   }
 }
 
+/* =====================================================
+   ACTUALIZAR CITA
+   PUT /appointments/:id
+   Revalida vacaciones, solapamientos y horario
+   ===================================================== */
+   /**
+    * Similar al de creación, pero si cambian las fechas o el fisioterapeuta, se vuelven a ejecutar todas las validaciones 
+    * de vacaciones y solapamientos. 
+    * */
 export async function update(req, res) {
   try {
     const id = req.params.id;
@@ -247,15 +291,15 @@ export async function update(req, res) {
     const current = await Appointment.findById(id);
     if (!current) return res.status(404).json({ message: 'No encontrada' });
 
-    // si cambian fechas o fisio, vuelve a comprobar vacaciones/solape
+    // Recalcular fechas
     let startDate = start ? new Date(start) : current.start;
     let endDate   = end ? new Date(end) : current.end;
     const physioId  = physio || current.physio;
 
-    // forzamos a franjas de 30 minutos
+    // Forzar franjas de 30 min
     [startDate, endDate] = ensureHalfHourRange(startDate, endDate);
 
-    // validación básica de rango horario
+    // Validación rango
     if (!(startDate instanceof Date) || isNaN(startDate)
       || !(endDate instanceof Date) || isNaN(endDate)
       || endDate <= startDate) {
@@ -264,6 +308,7 @@ export async function update(req, res) {
       });
     }
 
+    // Si cambia hora o fisio, volver a comprobar vacaciones y solape
     if (start || end || physio) {
       const inVacation = await Vacation.exists({
         fisio: physioId,
@@ -276,9 +321,8 @@ export async function update(req, res) {
         });
       }
 
-      // BLOQUEO de solapamientos (excluyendo la cita actual)
       const overlapping = await Appointment.exists({
-        _id: { $ne: id },
+        _id: { $ne: id }, // excluir la misma cita
         physio: physioId,
         start: { $lt: endDate },
         end:   { $gt: startDate },
@@ -290,7 +334,7 @@ export async function update(req, res) {
       }
     }
 
-    // resolver paciente
+    // Crear paciente
     let patientRef = current.patient || null;
     if (patientId) {
       patientRef = patientId;
@@ -302,6 +346,7 @@ export async function update(req, res) {
       patientRef = p._id;
     }
 
+    // Datos a actualizar
     const payload = {
       physio: physioId,
       start: startDate,
@@ -324,6 +369,10 @@ export async function update(req, res) {
   }
 }
 
+/* =====================================================
+   ELIMINAR CITA
+   DELETE /appointments/:id
+   ===================================================== */
 export async function remove(req, res) {
   try {
     await Appointment.findByIdAndDelete(req.params.id);
@@ -334,7 +383,10 @@ export async function remove(req, res) {
   }
 }
 
-// (Antiguo) zonas en citas -> ya no aplica; dejamos endpoint por compat retornando vacío
+/* =====================================================
+   ENDPOINT LEGACY — ya no se usa
+   Se mantiene por compatibilidad con versiones antiguas
+   ===================================================== */
 export async function zonesStats(_req, res) {
   res.json([]);
 }

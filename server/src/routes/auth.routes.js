@@ -1,3 +1,9 @@
+/**
+ * Aquí es donde se crea el token JWT cuando un usuario inicia sesión.
+Primero preparo el payload con los datos del usuario, y luego lo firmo con jwt.sign().
+Este token se envía al frontend y servirá para autenticar al usuario en cada petición.
+ */
+
 // Login y perfil
 import { Router } from 'express';
 import bcrypt from 'bcrypt';               // Para encriptar y comprobar contraseñas

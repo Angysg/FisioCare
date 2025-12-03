@@ -24,13 +24,21 @@ router.get('/', requireAuth, async (req, res) => {
   const q = (req.query.q || '').toString().trim();
   const sortMode = (req.query.sort || 'alpha').toString(); // alpha por defecto
 
-  const filter = q
-    ? { $or: [
-        { nombre:    new RegExp(q, 'i') },
-        { apellidos: new RegExp(q, 'i') },
-        { email:     new RegExp(q, 'i') },
-      ] }
-    : {};
+  let filter = {};
+
+  if (q) {
+    const terms = q.split(/\s+/).filter(Boolean); // separa por espacios
+
+    filter = {
+      $and: terms.map(t => ({
+        $or: [
+          { nombre:    new RegExp(t, 'i') },
+          { apellidos: new RegExp(t, 'i') },
+          { email:     new RegExp(t, 'i') },
+        ]
+      }))
+    };
+  }
 
   // Orden
   let sort = {};
@@ -48,6 +56,7 @@ router.get('/', requireAuth, async (req, res) => {
 
   res.json({ data: pacientes });
 });
+
 
 // Crear (admin y fisioterapeuta)
 router.post('/', requireAuth, ensureWriter, async (req, res) => {

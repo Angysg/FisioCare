@@ -1,10 +1,20 @@
+/**
+ * El módulo que centraliza todas las llamadas a la API del backend.
+Aquí configuro Axios, añado automáticamente el token en cada petición y creo funciones 
+reutilizables para cada recurso: pacientes, fisioterapeutas, vacaciones, citas, seguimientos, etc.
+
+Es el servicio de comunicación entre frontend y backend.
+ */
+
 // Cliente Axios que apunta a tu API y añade el token automáticamente
 import axios from "axios";
 
+//Crea un cliente Axios apuntando al backend
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL, // p.ej. http://localhost:4000
 });
 
+//Se añade el token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;

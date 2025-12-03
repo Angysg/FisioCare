@@ -1,3 +1,9 @@
+// client/src/components/PublicHeader.jsx
+/**
+ * PublicHeader es la cabecera que se muestra solo en las páginas públicas, como el login o la portada. 
+ * Es una versión simplificada del header principal: solo muestra el logo y el botón de tema, sin menú ni usuario.
+ */
+
 import { Link } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 
@@ -24,7 +30,7 @@ export default function PublicHeader() {
           columnGap: "32px",
         }}
       >
-        {/* LOGO IZQUIERDA (igual que en Layout.jsx) */}
+        {/* Logo (igual que en Layout, pero sin menú) */}
         <div style={{ justifySelf: "start" }}>
           <Link
             to="/"
@@ -57,9 +63,10 @@ export default function PublicHeader() {
           </Link>
         </div>
 
+        {/* Espacio vacío para centrar distribución */}
         <div></div>
 
-        {/* Botón de tema */}
+        {/* Botón modo claro/oscuro */}
         <div style={{ justifySelf: "end" }}>
           <ThemeToggle />
         </div>

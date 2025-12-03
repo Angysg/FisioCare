@@ -1,6 +1,11 @@
+// client/src/components/pacientes/PacienteRow.jsx
+
 import { useState } from "react";
 
+// Fila/tarjeta de paciente en la lista.
+// Muestra nombre, contacto y, al desplegar, antecedentes y adjuntos.
 export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdjunto, onEliminarAdjunto*/ }) {
+    // Estado local para controlar si el detalle está abierto o cerrado
     const [open, setOpen] = useState(false);
 
     return (
@@ -12,6 +17,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                 margin: 0,
                 borderRadius: 12,
                 background: "var(--panel)",
+                // Borde y sombra cambian según si el detalle está abierto
                 border: `1px solid ${isOpen
                     ? "color-mix(in srgb, var(--link) 28%, var(--border))"
                     : "var(--border)"}`,
@@ -21,7 +27,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                     : "0 1px 8px rgba(0,0,0,0.06)",
             }}
         >
-            {/* Cabecera clicable */}
+            {/* Cabecera clicable: nombre, apellidos, email y teléfono */}
             <button
                 type="button"
                 onClick={onToggle}
@@ -47,6 +53,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                     </div>
                 </div>
 
+                {/* Texto lateral que cambia según esté abierto o cerrado */}
                 <span
                     style={{
                         fontSize: "calc(var(--list-font-size) * 0.95)",
@@ -59,7 +66,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                 </span>
             </button>
 
-            {/* Cuerpo */}
+            {/* Cuerpo desplegable con transición de altura */}
             <div
                 style={{
                     height: h,
@@ -72,7 +79,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                         className="detalle"
                         style={{ padding: "0 14px 14px 14px", fontSize: "calc(var(--list-font-size) * 0.90)"  }}
                     >
-                        {/* Antecedentes */}
+                        {/* Antecedentes médicos del paciente */}
                         <div style={{ marginTop: 6, marginBottom: 12 }}>
                             <div style={{ fontWeight: 600, marginBottom: 6 }}>
                                 Antecedentes médicos
@@ -86,7 +93,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                             </div>
                         </div>
 
-                        {/* Adjuntos */}
+                        {/* Bloque de adjuntos (informes, documentos, etc.) */}
                         <div>
                             <div style={{ fontWeight: 600, marginBottom: 6 }}>Adjuntos</div>
                             {attachments.length === 0 ? (
@@ -105,6 +112,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                                                 gap: 8,
                                             }}
                                         >
+                                            {/* Nombre del archivo + tipo MIME */}
                                             <span
                                                 style={{
                                                     overflow: "hidden",
@@ -120,7 +128,7 @@ export default function PacienteRow({ paciente, onDescargarAdjunto /*, onVerAdju
                                                 </small>
                                             </span>
 
-                                            {/* === BOTONES refinados === */}
+                                            {/* Botones de acción sobre el adjunto */}
                                             <div style={{ display: "flex", gap: 8 }}>
                                                 <button className="btn-reset btn-adj" onClick={() => onVerAdjunto(a)}>
                                                     Ver

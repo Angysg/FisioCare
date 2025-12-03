@@ -1,4 +1,10 @@
 // Middleware que comprueba el token JWT del header Authorization
+/**
+ * Aquí es donde se verifica ese token en todas las rutas protegidas.
+Si el token es válido, se extrae el payload original y se guarda en req.user.
+Si no es válido o está caducado, el servidor bloquea la petición.
+
+ */
 import jwt from "jsonwebtoken";
 
 export function requireAuth(req, res, next) {
@@ -17,7 +23,7 @@ export function requireAuth(req, res, next) {
   }
 
   try {
-    //Verificar el token con la clave secreta del servidor
+    //Verificar el token con la clave secreta del servidor y guardarlo
     req.user = jwt.verify(token, process.env.JWT_SECRET);
 
     //Continuar hacia la ruta protegida
