@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { Fisio } from '../models/Fisio.js';
 import { requireAuth } from '../middleware/auth.js';
+import { User } from '../models/User.js'; //NUEVO
 
 const router = Router();
 
@@ -26,8 +27,23 @@ router.get('/', requireAuth, async (req, res) => {
     let sort = { apellidos: 1, nombre: 1 };
     if (sortMode === 'date') sort = { createdAt: -1 };
 
+    // 1) Fisios normales
     const fisios = await Fisio.find(filter).sort(sort).lean();
-    res.json({ ok: true, data: fisios });
+
+    // 2) Ver qué fisios tienen usuario (por email)
+    const emails = fisios.map(f => f.email).filter(Boolean);
+    const users = await User.find({ email: { $in: emails } })
+      .select('email')
+      .lean();
+    const emailsWithUser = new Set(users.map(u => u.email));
+
+    // 3) Añadir flag hasUser para que el front pueda pintar el icono
+    const data = fisios.map(f => ({
+      ...f,
+      hasUser: emailsWithUser.has(f.email),
+    }));
+
+    res.json({ ok: true, data });
   } catch (err) {
     res.status(500).json({ ok: false, error: err?.message || 'Error listando fisios' });
   }

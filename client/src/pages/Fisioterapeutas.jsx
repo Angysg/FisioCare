@@ -136,10 +136,32 @@ function FisioRow({ fisio, isOpen, onToggle, onEdit, onDelete, deleting }) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: "var(--link)", userSelect: "none" }}>
+          {/* Icono de acceso a la app */}
+          <span
+            title={fisio?.hasUser ? "Tiene acceso a la app" : "Sin acceso a la app"}
+            style={{ fontSize: 18 }}
+          >
+            {fisio?.hasUser ? "🔓" : "🔒"}
+          </span>
+
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--link)",
+              userSelect: "none",
+            }}
+          >
             {isOpen ? "Ocultar" : "Ver detalle"}
           </span>
-          <AdjButton title="Editar" onClick={(e) => { e.stopPropagation(); onEdit?.(fisio); }}>Editar</AdjButton>
+
+          <AdjButton
+            title="Editar"
+            onClick={(e) => { e.stopPropagation(); onEdit?.(fisio); }}
+          >
+            Editar
+          </AdjButton>
+
           <AdjButton
             variant="delete"
             title="Eliminar"
@@ -153,7 +175,12 @@ function FisioRow({ fisio, isOpen, onToggle, onEdit, onDelete, deleting }) {
 
       <div style={{ height: h, overflow: "hidden", transition: "height 300ms" }}>
         <div ref={wrapRef}>
-          <div style={{ padding: "0 14px 14px 14px",   fontSize: "calc(var(--list-font-size) * 0.90)", }}>
+          <div
+            style={{
+              padding: "0 14px 14px 14px",
+              fontSize: "calc(var(--list-font-size) * 0.90)",
+            }}
+          >
             <div style={{ color: "var(--muted)", marginBottom: 8 }}>
               {fisio?.email || "—"}
               {fisio?.telefono ? ` · ${fisio.telefono}` : ""}
